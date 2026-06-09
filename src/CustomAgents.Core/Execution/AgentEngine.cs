@@ -162,6 +162,7 @@ public sealed class AgentEngine(
         if (command.Equals("turn()", StringComparison.OrdinalIgnoreCase))
         {
             FlushBuffer(context);
+            await DisplayInitialHistoryAsync(context, cancellationToken);
             var completion = await turnRunner.RunTurnAsync(context, cancellationToken);
             if (context.HandoverPerformed)
             {
@@ -347,6 +348,11 @@ public sealed class AgentEngine(
         }
 
         FlushBuffer(context);
+
+        if (context.History.Count == 0)
+        {
+            return;
+        }
 
         foreach (var message in context.History)
         {

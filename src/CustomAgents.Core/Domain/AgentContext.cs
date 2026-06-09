@@ -27,7 +27,7 @@ public sealed class AgentContext
     {
         Variables["workingPath"] = WorkingPath;
         Variables["datetime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-        Variables["prompt"] = string.Empty;
+        Variables["prompt"] = string.IsNullOrWhiteSpace(InitialPrompt) ? string.Empty : InitialPrompt;
         Variables["completion"] = string.Empty;
     }
 
