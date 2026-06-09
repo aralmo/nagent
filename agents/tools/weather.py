@@ -17,7 +17,6 @@ Format options:
 """
 import requests
 import sys
-import codecs
 
 
 def get_weather(location: str, format_type: str = None) -> str:
@@ -44,9 +43,21 @@ def get_weather(location: str, format_type: str = None) -> str:
     try:
         r = requests.get(url, timeout=10)
         r.raise_for_status()
+        # Ensure UTF-8 encoding for the response
+        r.encoding = 'utf-8'
         return r.text
     except requests.RequestException as e:
         return f"Error fetching weather: {e}"
+
+
+def setup_stdout_encoding():
+    """Configure stdout for proper UTF-8 handling on Windows."""
+    # Python 3.7+ supports reconfigure
+    if hasattr(sys.stdout, 'reconfigure'):
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except (OSError, ValueError):
+            pass  # Ignore if reconfigure fails
 
 
 def main():
@@ -63,12 +74,16 @@ def main():
     
     result = get_weather(location, format_type)
     
-    # Handle Windows console encoding
+    # Setup UTF-8 encoding for stdout (important for Windows)
+    setup_stdout_encoding()
+    
+    # Print with proper encoding handling
     try:
         print(result)
     except UnicodeEncodeError:
-        # Fallback: encode to utf-8, ignoring errors
-        sys.stdout.buffer.write(result.encode('utf-8', errors='replace'))
+        # Fallback: encode to utf-8, replacing problematic characters
+        encoded = result.encode('utf-8', errors='replace')
+        sys.stdout.buffer.write(encoded)
         sys.stdout.buffer.write(b'\n')
 
 

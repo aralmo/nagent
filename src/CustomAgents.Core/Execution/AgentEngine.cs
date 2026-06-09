@@ -69,7 +69,7 @@ public sealed class AgentEngine(
                 case ShellNode shellNode:
                     context.RefreshDateTime();
                     var command = VariableSubstitution.Substitute(shellNode.Command, context);
-                    var output = await shellRunner.RunAsync(command, context.WorkingPath, cancellationToken);
+                    var output = (await shellRunner.RunAsync(command, context.WorkingPath, cancellationToken)).Output;
                     context.CurrentBuffer += output;
                     break;
 

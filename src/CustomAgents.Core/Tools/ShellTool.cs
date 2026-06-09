@@ -17,23 +17,44 @@ public sealed class ShellTool(ShellRunner shellRunner) : ITool
             {
                 ["type"] = "string",
                 ["description"] = "Shell command to execute."
+            },
+            ["timeout"] = new JsonObject
+            {
+                ["type"] = "number",
+                ["description"] = "Maximum seconds to wait for the command. Defaults to 10."
             }
         },
         ["required"] = new JsonArray("command")
     };
 
-    public Task<string> InvokeAsync(JsonObject arguments, string workingPath, CancellationToken cancellationToken = default)
+    public async Task<string> InvokeAsync(JsonObject arguments, string workingPath, CancellationToken cancellationToken = default)
     {
         var command = ShellCommandParser.Parse(arguments);
-        return shellRunner.RunAsync(command, workingPath, cancellationToken);
+        var timeout = ShellCommandParser.ParseTimeout(arguments);
+        var result = await shellRunner.RunAsync(command, workingPath, timeout, cancellationToken);
+        return FormatResult(result);
     }
 
-    public Task<string> InvokeFromRawAsync(
+    public async Task<string> InvokeFromRawAsync(
         string argumentsJson,
         string workingPath,
         CancellationToken cancellationToken = default)
     {
         var command = ShellCommandParser.Parse(argumentsJson);
-        return shellRunner.RunAsync(command, workingPath, cancellationToken);
+        var timeout = ShellCommandParser.ParseTimeout(argumentsJson);
+        var result = await shellRunner.RunAsync(command, workingPath, timeout, cancellationToken);
+        return FormatResult(result);
+    }
+
+    private static string FormatResult(ShellRunResult result)
+    {
+        if (!result.TimedOut)
+        {
+            return result.Output;
+        }
+
+        return string.IsNullOrEmpty(result.Output)
+            ? "tool timed out"
+            : $"tool timed out\n\n{result.Output}";
     }
 }

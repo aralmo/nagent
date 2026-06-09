@@ -14,11 +14,5 @@
     "parameters": [
       { "name": "location", "description": "City or place name" }
     ]
-  },
-  {
-    "name": "git-status",
-    "description": "Show git status in the working folder",
-    "command": "git -C $workingPath status -sb",
-    "parameters": []
   }
 ]

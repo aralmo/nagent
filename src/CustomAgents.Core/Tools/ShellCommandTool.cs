@@ -68,7 +68,7 @@ public sealed class ShellCommandTool(ShellRunner shellRunner, CustomToolDefiniti
                 arguments,
                 context);
 
-            return await shellRunner.RunAsync(command, workingPath, cancellationToken);
+            return (await shellRunner.RunAsync(command, workingPath, cancellationToken)).Output;
         }
         catch (Exception ex)
         {

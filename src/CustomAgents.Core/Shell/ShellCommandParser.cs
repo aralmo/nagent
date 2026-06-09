@@ -5,6 +5,8 @@ namespace CustomAgents.Core.Shell;
 
 public static class ShellCommandParser
 {
+    public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
+
     public static string Parse(string argumentsJson)
     {
         if (string.IsNullOrWhiteSpace(argumentsJson))
@@ -41,6 +43,53 @@ public static class ShellCommandParser
     public static string Parse(JsonObject arguments) =>
         CommandUnescape.UnescapeFully(ExtractFromObject(arguments)
             ?? throw new ArgumentException("shell requires 'command'."));
+
+    public static TimeSpan ParseTimeout(JsonObject arguments) =>
+        ParseTimeoutFromNode(arguments.TryGetPropertyValue("timeout", out var node) ? node : null);
+
+    public static TimeSpan ParseTimeout(string argumentsJson)
+    {
+        if (string.IsNullOrWhiteSpace(argumentsJson))
+        {
+            return DefaultTimeout;
+        }
+
+        try
+        {
+            var node = JsonNode.Parse(argumentsJson.Trim());
+            return node switch
+            {
+                JsonObject obj => ParseTimeout(obj),
+                _ => DefaultTimeout
+            };
+        }
+        catch (JsonException)
+        {
+            return DefaultTimeout;
+        }
+    }
+
+    private static TimeSpan ParseTimeoutFromNode(JsonNode? node)
+    {
+        if (node is null)
+        {
+            return DefaultTimeout;
+        }
+
+        var seconds = node switch
+        {
+            JsonValue value when value.TryGetValue<double>(out var d) => d,
+            JsonValue value when value.TryGetValue<int>(out var i) => i,
+            _ => throw new ArgumentException("shell 'timeout' must be a number of seconds.")
+        };
+
+        if (seconds <= 0)
+        {
+            throw new ArgumentException("shell 'timeout' must be positive.");
+        }
+
+        return TimeSpan.FromSeconds(seconds);
+    }
 
     private static string? ExtractFromObject(JsonObject arguments)
     {
