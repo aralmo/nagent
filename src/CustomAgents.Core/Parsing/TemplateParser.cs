@@ -7,6 +7,9 @@ public sealed partial class TemplateParser
     [GeneratedRegex(@"\[(\w+):([^\]]*)\]", RegexOptions.Compiled)]
     private static partial Regex DirectiveRegex();
 
+    [GeneratedRegex(@"<!--[\s\S]*?-->", RegexOptions.Compiled)]
+    private static partial Regex HtmlCommentRegex();
+
     private readonly HashSet<string> _expandedPartials = new(StringComparer.OrdinalIgnoreCase);
 
     public ParsedTemplate ParseFile(string filePath, string workingPath)
@@ -56,7 +59,7 @@ public sealed partial class TemplateParser
     {
         var nodes = new List<TemplateNode>();
         var labels = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        var lines = content.Replace("\r\n", "\n").Split('\n');
+        var lines = StripHtmlComments(content).Replace("\r\n", "\n").Split('\n');
 
         for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
         {
@@ -301,6 +304,9 @@ public sealed partial class TemplateParser
 
         return value.Trim();
     }
+
+    private static string StripHtmlComments(string content) =>
+        HtmlCommentRegex().Replace(content, string.Empty);
 
     private static string ResolvePath(string path, string workingPath, string sourcePath)
     {

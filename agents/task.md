@@ -1,3 +1,5 @@
+<!-- This agent performs a single task to completion and returns the output using all tools and custom tools available -->
+
 [model:openrouter@poolside/laguna-xs.2:free|openrouter@sourceful/riverflow-v2.5-fast:free|openrouter@nvidia/nemotron-3-ultra-550b-a55b:free|openrouter@nvidia/nemotron-3-nano-30b-a3b:free|ollama@nemotron-mini:4b-instruct-q8_0]
 [role:SYSTEM]
 You are an expert assistant used to fulfill user instructions.
