@@ -1,0 +1,26 @@
+{
+  "sessionId": "dc7199b2-54ed-4627-8c0a-38ff1f49cc5a",
+  "createdAt": "2026-06-09T10:48:49.3919246+00:00",
+  "updatedAt": "2026-06-09T10:48:49.4485215+00:00",
+  "workingPath": "C:\\Users\\aralm\\repo\\custom-agents\\agents",
+  "templatePath": "C:\\Users\\aralm\\repo\\custom-agents\\agents\\plan.md",
+  "initialPrompt": null,
+  "toolFiles": [],
+  "logFilePath": "C:\\Users\\aralm\\repo\\custom-agents\\agents\\logs\\20260609-104849-392.jsonl",
+  "programCounter": 0,
+  "history": [],
+  "variables": {
+    "workingPath": "C:\\Users\\aralm\\repo\\custom-agents\\agents",
+    "datetime": "2026-06-09 12:48:49",
+    "prompt": "",
+    "completion": ""
+  },
+  "activeToolNames": [],
+  "activeToolEntries": [],
+  "modelFallbacks": [],
+  "currentRole": null,
+  "currentBuffer": "",
+  "initialPromptConsumed": false,
+  "initialHistoryDisplayed": false,
+  "handoverPerformed": false
+}

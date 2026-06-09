@@ -2,7 +2,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using CustomAgents.Core.Domain;
-using CustomAgents.Core.Shell;
 
 namespace CustomAgents.Core.Tools;
 
@@ -55,7 +54,7 @@ public static partial class CommandTemplateSubstitution
             if (values.TryGetValue(name, out var value))
             {
                 missingParameters.Remove(name);
-                return ShellQuoter.Quote(value);
+                return value;
             }
 
             if (definedSet.Contains(name))

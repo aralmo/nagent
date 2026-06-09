@@ -16,7 +16,7 @@
   {
     "name": "weather",
     "description": "Get current weather for a location via wttr.in",
-    "command": "python tools/weather.py $location 2",
+    "command": "python tools/weather.py \"$location\" 2",
     "parameters": [
       { "name": "location", "description": "City or place name" }
     ]
@@ -24,9 +24,109 @@
   {
     "name": "weather-full",
     "description": "Get full weather report for a location",
-    "command": "python tools/weather.py $location",
+    "command": "python tools/weather.py \"$location\"",
     "parameters": [
       { "name": "location", "description": "City or place name" }
+    ]
+  },
+  {
+    "name": "spotify-auth",
+    "description": "Authenticate with Spotify account (run once to setup)",
+    "command": "python tools/spotify.py auth",
+    "parameters": []
+  },
+  {
+    "name": "spotify-status",
+    "description": "Get current Spotify playback status",
+    "command": "python tools/spotify.py status",
+    "parameters": []
+  },
+  {
+    "name": "spotify-play",
+    "description": "Play music - optionally search and play a track",
+    "command": "python tools/spotify.py play \"$query\"",
+    "parameters": [
+      { "name": "query", "description": "Song/artist/album to search and play (optional)" }
+    ]
+  },
+  {
+    "name": "spotify-play-device",
+    "description": "Search and play a track on a specific device",
+    "command": "python tools/spotify.py play \"$query\" --device $device_id",
+    "parameters": [
+      { "name": "query", "description": "Song/artist/album to search and play" },
+      { "name": "device_id", "description": "Device ID to play on (get from spotify-devices command)" }
+    ]
+  },
+  {
+    "name": "spotify-pause",
+    "description": "Pause Spotify playback",
+    "command": "python tools/spotify.py pause",
+    "parameters": []
+  },
+  {
+    "name": "spotify-next",
+    "description": "Skip to next track",
+    "command": "python tools/spotify.py next",
+    "parameters": []
+  },
+  {
+    "name": "spotify-prev",
+    "description": "Go to previous track",
+    "command": "python tools/spotify.py prev",
+    "parameters": []
+  },
+  {
+    "name": "spotify-volume",
+    "description": "Set Spotify volume (0-100)",
+    "command": "python tools/spotify.py volume $level",
+    "parameters": [
+      { "name": "level", "description": "Volume level 0-100" }
+    ]
+  },
+  {
+    "name": "spotify-search",
+    "description": "Search for tracks, artists, albums on Spotify",
+    "command": "python tools/spotify.py search \"$query\"",
+    "parameters": [
+      { "name": "query", "description": "Search query (song, artist, or album)" }
+    ]
+  },
+  {
+    "name": "spotify-queue",
+    "description": "Add a track to the playback queue",
+    "command": "python tools/spotify.py queue \"$query\"",
+    "parameters": [
+      { "name": "query", "description": "Song/artist/album to add to queue" }
+    ]
+  },
+  {
+    "name": "spotify-devices",
+    "description": "List available Spotify playback devices",
+    "command": "python tools/spotify.py devices",
+    "parameters": []
+  },
+  {
+    "name": "spotify-playlists",
+    "description": "List the current user's Spotify playlists",
+    "command": "python tools/spotify.py playlists",
+    "parameters": []
+  },
+  {
+    "name": "get-tech-news",
+    "description": "Fetch and display latest technology news from RSS feeds",
+    "command": "python tools/get_tech_news.py --top $num_articles",
+    "parameters": [
+      { "name": "num_articles", "description": "Number of top articles to display (default: 10)" }
+    ]
+  },
+  {
+    "name": "get-tech-news-api",
+    "description": "Fetch technology news from NewsAPI (requires API key)",
+    "command": "python tools/get_tech_news.py --api-key $api_key --top $num_articles",
+    "parameters": [
+      { "name": "api_key", "description": "NewsAPI.org API key" },
+      { "name": "num_articles", "description": "Number of top articles to display (default: 10)" }
     ]
   }
 ]

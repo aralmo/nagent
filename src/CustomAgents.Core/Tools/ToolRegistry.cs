@@ -138,24 +138,31 @@ public sealed class ToolRegistry
         AgentContext? context = null,
         CancellationToken cancellationToken = default)
     {
-        if (!_tools.TryGetValue(name, out var tool))
+        try
         {
-            return $"Error: unknown tool '{name}'.";
-        }
+            if (!_tools.TryGetValue(name, out var tool))
+            {
+                return $"Error: unknown tool '{name}'.";
+            }
 
-        if (tool is ShellTool shellTool)
+            if (tool is ShellTool shellTool)
+            {
+                return await shellTool.InvokeFromRawAsync(argumentsJson, workingPath, cancellationToken);
+            }
+
+            var args = System.Text.Json.Nodes.JsonNode.Parse(argumentsJson)?.AsObject()
+                ?? new System.Text.Json.Nodes.JsonObject();
+
+            if (tool is ShellCommandTool shellCommandTool)
+            {
+                return await shellCommandTool.InvokeAsync(args, workingPath, context, cancellationToken);
+            }
+
+            return await tool.InvokeAsync(args, workingPath, cancellationToken);
+        }
+        catch (Exception ex)
         {
-            return await shellTool.InvokeFromRawAsync(argumentsJson, workingPath, cancellationToken);
+            return $"Error: {ex.Message}";
         }
-
-        var args = System.Text.Json.Nodes.JsonNode.Parse(argumentsJson)?.AsObject()
-            ?? new System.Text.Json.Nodes.JsonObject();
-
-        if (tool is ShellCommandTool shellCommandTool)
-        {
-            return await shellCommandTool.InvokeAsync(args, workingPath, context, cancellationToken);
-        }
-
-        return await tool.InvokeAsync(args, workingPath, cancellationToken);
     }
 }

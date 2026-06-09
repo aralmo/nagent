@@ -76,68 +76,10 @@ public sealed class TurnRunner(
                     arguments = toolCall.ArgumentsJson
                 }, cancellationToken);
 
-                string toolResult;
-                if (toolCall.Name.Equals("agent-handover", StringComparison.OrdinalIgnoreCase))
-                {
-                    var (agentPath, prompt) = ParseAgentSubArguments(toolCall.ArgumentsJson);
-                    var snapshot = workingMessages.Select(m => m.Clone()).ToList();
-                    toolResult = await handoverCoordinator.HandoverAsync(
-                        context,
-                        snapshot,
-                        agentPath,
-                        prompt,
-                        cancellationToken);
-
-                    await host.WriteToolResponseAsync(toolCall.Name, toolResult, cancellationToken);
-
-                    await logger.LogAsync(new
-                    {
-                        type = "tool_response",
-                        timestamp = DateTimeOffset.UtcNow,
-                        id = toolCall.Id,
-                        name = toolCall.Name,
-                        content = toolResult
-                    }, cancellationToken);
-
-                    return toolResult;
-                }
-
-                if (toolCall.Name.Equals("agent-delegate", StringComparison.OrdinalIgnoreCase))
-                {
-                    var (agentPath, prompt) = ParseAgentSubArguments(toolCall.ArgumentsJson);
-                    toolResult = await delegateCoordinator.DelegateAsync(
-                        context,
-                        agentPath,
-                        prompt,
-                        cancellationToken);
-
-                    await host.WriteToolResponseAsync(toolCall.Name, toolResult, cancellationToken);
-
-                    await logger.LogAsync(new
-                    {
-                        type = "tool_response",
-                        timestamp = DateTimeOffset.UtcNow,
-                        id = toolCall.Id,
-                        name = toolCall.Name,
-                        content = toolResult
-                    }, cancellationToken);
-
-                    workingMessages.Add(new ChatMessage
-                    {
-                        Role = ChatRole.Tool,
-                        Content = toolResult,
-                        ToolCallId = toolCall.Id,
-                        Name = toolCall.Name
-                    });
-
-                    continue;
-                }
-
-                toolResult = await toolRegistry.InvokeAsync(
-                    toolCall.Name,
-                    toolCall.ArgumentsJson,
-                    context.WorkingPath,
+                var toolResult = await ExecuteToolCallAsync(
+                    toolCall,
                     context,
+                    workingMessages,
                     cancellationToken);
 
                 await host.WriteToolResponseAsync(toolCall.Name, toolResult, cancellationToken);
@@ -151,6 +93,12 @@ public sealed class TurnRunner(
                     content = toolResult
                 }, cancellationToken);
 
+                if (toolCall.Name.Equals("agent-handover", StringComparison.OrdinalIgnoreCase) &&
+                    !IsToolError(toolResult))
+                {
+                    return toolResult;
+                }
+
                 workingMessages.Add(new ChatMessage
                 {
                     Role = ChatRole.Tool,
@@ -161,6 +109,52 @@ public sealed class TurnRunner(
             }
         }
     }
+
+    private async Task<string> ExecuteToolCallAsync(
+        ToolCall toolCall,
+        AgentContext context,
+        List<ChatMessage> workingMessages,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (toolCall.Name.Equals("agent-handover", StringComparison.OrdinalIgnoreCase))
+            {
+                var (agentPath, prompt) = ParseAgentSubArguments(toolCall.ArgumentsJson);
+                var snapshot = workingMessages.Select(m => m.Clone()).ToList();
+                return await handoverCoordinator.HandoverAsync(
+                    context,
+                    snapshot,
+                    agentPath,
+                    prompt,
+                    cancellationToken);
+            }
+
+            if (toolCall.Name.Equals("agent-delegate", StringComparison.OrdinalIgnoreCase))
+            {
+                var (agentPath, prompt) = ParseAgentSubArguments(toolCall.ArgumentsJson);
+                return await delegateCoordinator.DelegateAsync(
+                    context,
+                    agentPath,
+                    prompt,
+                    cancellationToken);
+            }
+
+            return await toolRegistry.InvokeAsync(
+                toolCall.Name,
+                toolCall.ArgumentsJson,
+                context.WorkingPath,
+                context,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            return $"Error: {ex.Message}";
+        }
+    }
+
+    private static bool IsToolError(string toolResult) =>
+        toolResult.StartsWith("Error:", StringComparison.OrdinalIgnoreCase);
 
     private static (string AgentPath, string? Prompt) ParseAgentSubArguments(string argumentsJson)
     {

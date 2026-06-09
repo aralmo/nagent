@@ -20,7 +20,7 @@ public sealed class FileSearchTool : ITool
             ["filter"] = new JsonObject
             {
                 ["type"] = "string",
-                ["description"] = "File name filter, e.g. *.cs"
+                ["description"] = "File name filter, e.g. *.cs or **/*.py for recursive search"
             },
             ["recurse"] = new JsonObject
             {
@@ -44,8 +44,60 @@ public sealed class FileSearchTool : ITool
             return Task.FromResult($"Error: folder not found: {resolved}");
         }
 
-        var option = recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-        var files = Directory.GetFiles(resolved, filter, option);
-        return Task.FromResult(string.Join(Environment.NewLine, files));
+        var (searchFolder, filePattern, searchRecurse) = NormalizeFilter(resolved, filter, recurse);
+
+        if (!Directory.Exists(searchFolder))
+        {
+            return Task.FromResult($"Error: folder not found: {searchFolder}");
+        }
+
+        try
+        {
+            var option = searchRecurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            var files = Directory.GetFiles(searchFolder, filePattern, option);
+            return Task.FromResult(string.Join(Environment.NewLine, files));
+        }
+        catch (Exception ex)
+        {
+            return Task.FromResult($"Error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Converts glob-style filters (e.g. **/*.py, tools/*.cs) into Directory.GetFiles parameters.
+    /// </summary>
+    private static (string searchFolder, string filePattern, bool recurse) NormalizeFilter(
+        string folder, string filter, bool explicitRecurse)
+    {
+        var normalized = filter.Replace('\\', '/');
+        var lastSlash = normalized.LastIndexOf('/');
+
+        if (lastSlash < 0)
+        {
+            return (folder, filter, explicitRecurse);
+        }
+
+        var pathPart = normalized[..lastSlash];
+        var filePart = normalized[(lastSlash + 1)..];
+        if (string.IsNullOrEmpty(filePart))
+        {
+            filePart = "*";
+        }
+
+        var searchRecurse = explicitRecurse || pathPart.Contains("**", StringComparison.Ordinal);
+        if (searchRecurse)
+        {
+            pathPart = pathPart
+                .Replace("/**/", "/", StringComparison.Ordinal)
+                .Replace("/**", "", StringComparison.Ordinal)
+                .Replace("**/", "", StringComparison.Ordinal)
+                .Replace("**", "", StringComparison.Ordinal);
+        }
+
+        var searchFolder = string.IsNullOrEmpty(pathPart)
+            ? folder
+            : Path.Combine(folder, pathPart.Replace('/', Path.DirectorySeparatorChar));
+
+        return (searchFolder, filePart, searchRecurse);
     }
 }

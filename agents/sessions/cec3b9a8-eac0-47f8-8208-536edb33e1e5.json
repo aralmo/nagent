@@ -1,0 +1,65 @@
+{
+  "sessionId": "cec3b9a8-eac0-47f8-8208-536edb33e1e5",
+  "createdAt": "2026-06-09T10:44:50.6329473+00:00",
+  "updatedAt": "2026-06-09T10:45:01.4235709+00:00",
+  "workingPath": "C:\\Users\\aralm\\repo\\custom-agents\\agents",
+  "templatePath": "C:\\Users\\aralm\\repo\\custom-agents\\agents\\assistant.md",
+  "initialPrompt": null,
+  "toolFiles": [],
+  "logFilePath": "C:\\Users\\aralm\\repo\\custom-agents\\agents\\logs\\20260609-104450-633.jsonl",
+  "programCounter": 10,
+  "history": [
+    {
+      "role": "system",
+      "content": "You are an expert assistant used to fulfill user instructions.Use tools to fulfill the user requests, then respond in a concise maner.    Current Time: 2026-06-09 12:44:50    Working folder: C:\\Users\\aralm\\repo\\custom-agents\\agents",
+      "toolCallId": null,
+      "name": null,
+      "toolCalls": null
+    }
+  ],
+  "variables": {
+    "workingPath": "C:\\Users\\aralm\\repo\\custom-agents\\agents",
+    "datetime": "2026-06-09 12:44:50",
+    "prompt": "play spotify",
+    "completion": ""
+  },
+  "activeToolNames": [
+    "shell",
+    "file-read",
+    "file-write",
+    "file-search",
+    "echo-text",
+    "geolocation",
+    "weather",
+    "weather-full",
+    "spotify-auth",
+    "spotify-status",
+    "spotify-play",
+    "spotify-pause",
+    "spotify-next",
+    "spotify-prev",
+    "spotify-volume",
+    "spotify-search",
+    "spotify-queue",
+    "spotify-devices"
+  ],
+  "activeToolEntries": [
+    "shell",
+    "file-read",
+    "file-write",
+    "file-search",
+    "file(\u0027custom-tools.json\u0027)"
+  ],
+  "modelFallbacks": [
+    "openrouter@poolside/laguna-xs.2:free",
+    "openrouter@sourceful/riverflow-v2.5-fast:free",
+    "openrouter@nvidia/nemotron-3-ultra-550b-a55b:free",
+    "openrouter@nvidia/nemotron-3-nano-30b-a3b:free",
+    "ollama@nemotron-mini:4b-instruct-q8_0"
+  ],
+  "currentRole": "user",
+  "currentBuffer": "play spotify",
+  "initialPromptConsumed": false,
+  "initialHistoryDisplayed": true,
+  "handoverPerformed": false
+}
