@@ -22,6 +22,7 @@ public sealed class AgentContext
     public bool InitialPromptConsumed { get; set; }
     public bool InitialHistoryDisplayed { get; set; }
     public bool HandoverPerformed { get; set; }
+    public bool SuppressOutput { get; set; }
 
     public void InitializeVariables()
     {

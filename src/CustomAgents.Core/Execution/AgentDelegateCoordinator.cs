@@ -103,7 +103,8 @@ public sealed class AgentDelegateCoordinator(
         {
             WorkingPath = parentContext.WorkingPath,
             TemplatePath = templatePath,
-            InitialPrompt = prompt
+            InitialPrompt = prompt,
+            SuppressOutput = parentContext.SuppressOutput
         };
         childContext.InitializeVariables();
 

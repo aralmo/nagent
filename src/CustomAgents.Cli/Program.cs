@@ -31,7 +31,7 @@ internal static class Program
 
         if (launch.IsResume)
         {
-            return await RunResumeAsync(launch.ResumeSessionId!);
+            return await RunResumeAsync(launch);
         }
 
         if (!File.Exists(launch.TemplatePath!))
@@ -50,7 +50,7 @@ internal static class Program
         var createdAt = DateTimeOffset.UtcNow;
         var sessionStore = new SessionStore();
 
-        var host = new ConsoleAgentHost();
+        var host = new ConsoleAgentHost(launch.NoOutput);
         await using var logger = JsonlConversationLogger.Create(workingPath);
 
         var sessionMetadata = new SessionMetadata
@@ -81,7 +81,8 @@ internal static class Program
             {
                 WorkingPath = workingPath,
                 TemplatePath = Path.GetFullPath(launch.TemplatePath!),
-                InitialPrompt = launch.InitialPrompt
+                InitialPrompt = launch.InitialPrompt,
+                SuppressOutput = launch.NoOutput
             };
             context.InitializeVariables();
 
@@ -90,19 +91,32 @@ internal static class Program
             await engine.RunAsync(template, context);
             await checkpointService.SaveAsync(context);
 
-            PrintExitHint(sessionId, logger.LogFilePath);
+            if (launch.NoOutput)
+            {
+                PrintCompletion(context);
+            }
+            else
+            {
+                PrintExitHint(sessionId, logger.LogFilePath);
+            }
+
             return 0;
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
-            PrintExitHint(sessionId, logger.LogFilePath);
+            if (!launch.NoOutput)
+            {
+                PrintExitHint(sessionId, logger.LogFilePath);
+            }
+
             return 1;
         }
     }
 
-    private static async Task<int> RunResumeAsync(string sessionId)
+    private static async Task<int> RunResumeAsync(LaunchArgs launch)
     {
+        var sessionId = launch.ResumeSessionId!;
         var sessionStore = new SessionStore();
         var session = sessionStore.TryLoadSession(sessionId);
         if (session is null)
@@ -119,7 +133,7 @@ internal static class Program
 
         Directory.SetCurrentDirectory(session.WorkingPath);
 
-        var host = new ConsoleAgentHost();
+        var host = new ConsoleAgentHost(launch.NoOutput);
         await using var logger = !string.IsNullOrEmpty(session.LogFilePath) && File.Exists(session.LogFilePath)
             ? JsonlConversationLogger.OpenExisting(session.LogFilePath)
             : JsonlConversationLogger.Create(session.WorkingPath);
@@ -141,7 +155,8 @@ internal static class Program
             var template = parser.ParseFile(session.TemplatePath, session.WorkingPath);
             var context = new AgentContext
             {
-                WorkingPath = session.WorkingPath
+                WorkingPath = session.WorkingPath,
+                SuppressOutput = launch.NoOutput
             };
             AgentContextMapper.ApplyToContext(session, context);
             context.RefreshDateTime();
@@ -149,13 +164,25 @@ internal static class Program
             await engine.RunAsync(template, context, initializeVariables: false);
             await checkpointService.SaveAsync(context);
 
-            PrintExitHint(sessionId, logger.LogFilePath);
+            if (launch.NoOutput)
+            {
+                PrintCompletion(context);
+            }
+            else
+            {
+                PrintExitHint(sessionId, logger.LogFilePath);
+            }
+
             return 0;
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
-            PrintExitHint(sessionId, logger.LogFilePath);
+            if (!launch.NoOutput)
+            {
+                PrintExitHint(sessionId, logger.LogFilePath);
+            }
+
             return 1;
         }
     }
@@ -205,6 +232,14 @@ internal static class Program
         return engine;
     }
 
+    private static void PrintCompletion(AgentContext context)
+    {
+        if (context.Variables.TryGetValue("completion", out var completion) && !string.IsNullOrEmpty(completion))
+        {
+            Console.Write(completion);
+        }
+    }
+
     private static void PrintExitHint(string sessionId, string logFilePath)
     {
         Console.WriteLine();
@@ -228,6 +263,18 @@ internal static class Program
 
             launch.IsResume = true;
             launch.ResumeSessionId = args[1];
+            for (var i = 2; i < args.Length; i++)
+            {
+                if (args[i] == "--no-output")
+                {
+                    launch.NoOutput = true;
+                    continue;
+                }
+
+                error = $"Unknown argument: {args[i]}";
+                return false;
+            }
+
             return true;
         }
 
@@ -246,6 +293,12 @@ internal static class Program
                 continue;
             }
 
+            if (args[i] == "--no-output")
+            {
+                launch.NoOutput = true;
+                continue;
+            }
+
             error = $"Unknown argument: {args[i]}";
             return false;
         }
@@ -256,8 +309,8 @@ internal static class Program
     private static void PrintUsage()
     {
         Console.WriteLine("Usage:");
-        Console.WriteLine("  customagent <template.md> [--prompt <initial prompt>] [--tools <tools.json>]...");
-        Console.WriteLine("  customagent --resume <sessionId>");
+        Console.WriteLine("  customagent <template.md> [--prompt <initial prompt>] [--tools <tools.json>]... [--no-output]");
+        Console.WriteLine("  customagent --resume <sessionId> [--no-output]");
     }
 
     internal sealed class LaunchArgs
@@ -266,6 +319,7 @@ internal static class Program
         public string? ResumeSessionId { get; set; }
         public string? TemplatePath { get; set; }
         public string? InitialPrompt { get; set; }
+        public bool NoOutput { get; set; }
         public List<string> ToolFiles { get; } = [];
     }
 }

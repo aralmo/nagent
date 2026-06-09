@@ -5,8 +5,9 @@ using CustomAgents.Core.Hosting;
 
 namespace CustomAgents.Cli;
 
-public sealed class ConsoleAgentHost : IAgentHost
+public sealed class ConsoleAgentHost(bool noOutput = false) : IAgentHost
 {
+    private readonly bool _noOutput = noOutput;
     private bool _thinkingActive;
     private bool _responseActive;
 
@@ -79,6 +80,11 @@ public sealed class ConsoleAgentHost : IAgentHost
 
     public Task WriteStreamDeltaAsync(string delta, CancellationToken cancellationToken = default)
     {
+        if (_noOutput)
+        {
+            return Task.CompletedTask;
+        }
+
         EndThinking();
         BeginResponse();
         Console.Write(delta);
@@ -87,6 +93,11 @@ public sealed class ConsoleAgentHost : IAgentHost
 
     public Task WriteThinkingDeltaAsync(string delta, CancellationToken cancellationToken = default)
     {
+        if (_noOutput)
+        {
+            return Task.CompletedTask;
+        }
+
         BeginThinking();
         WriteColored(delta, ConsoleColor.DarkGray);
         return Task.CompletedTask;
@@ -94,6 +105,11 @@ public sealed class ConsoleAgentHost : IAgentHost
 
     public Task WriteToolCallAsync(string name, string argumentsJson, CancellationToken cancellationToken = default)
     {
+        if (_noOutput)
+        {
+            return Task.CompletedTask;
+        }
+
         EndResponse();
         Console.WriteLine();
         WriteColored($"[tool-call] {name}", ConsoleColor.Cyan);
@@ -104,6 +120,11 @@ public sealed class ConsoleAgentHost : IAgentHost
 
     public Task WriteToolResponseAsync(string name, string content, CancellationToken cancellationToken = default)
     {
+        if (_noOutput)
+        {
+            return Task.CompletedTask;
+        }
+
         Console.WriteLine();
         WriteColored($"[tool-response] {name}", ConsoleColor.Yellow);
         Console.WriteLine();
@@ -114,6 +135,11 @@ public sealed class ConsoleAgentHost : IAgentHost
 
     public Task WriteSystemMessageAsync(string message, CancellationToken cancellationToken = default)
     {
+        if (_noOutput)
+        {
+            return Task.CompletedTask;
+        }
+
         EndResponse();
         Console.WriteLine();
         WriteColored($"[system] {message}", ConsoleColor.DarkGray);
@@ -122,6 +148,11 @@ public sealed class ConsoleAgentHost : IAgentHost
 
     public Task WriteHistoryMessageAsync(ChatRole role, string content, CancellationToken cancellationToken = default)
     {
+        if (_noOutput)
+        {
+            return Task.CompletedTask;
+        }
+
         EndResponse();
         Console.WriteLine();
         var (label, color) = role switch

@@ -38,6 +38,7 @@ public sealed class TurnRunner(
                 tools,
                 context,
                 updateCompletion: true,
+                streamToHost: !context.SuppressOutput,
                 cancellationToken: cancellationToken);
 
             if (result.ToolCalls.Count == 0)
