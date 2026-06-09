@@ -17,7 +17,7 @@ public sealed class ConsoleAgentHost : IAgentHost
         WriteColored("[prompt] ", ConsoleColor.White);
         Console.Write("> ");
         var input = Console.ReadLine();
-        if (input is null)
+        if (input is null || IsQuitCommand(input))
         {
             return Task.FromResult<string?>(null);
         }
@@ -41,7 +41,7 @@ public sealed class ConsoleAgentHost : IAgentHost
             WriteColored($"[{optionYes}] / [{optionNo}] ", ConsoleColor.White);
             Console.Write("> ");
             var input = Console.ReadLine();
-            if (input is null)
+            if (input is null || IsQuitCommand(input))
             {
                 return Task.FromResult<string?>(null);
             }
@@ -67,6 +67,15 @@ public sealed class ConsoleAgentHost : IAgentHost
 
     private static string NormalizeChoiceInput(string value) =>
         value.Replace(" ", string.Empty, StringComparison.Ordinal);
+
+    private static bool IsQuitCommand(string input)
+    {
+        var normalized = input.Trim();
+        return normalized.Equals("quit", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("/quit", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("exit", StringComparison.OrdinalIgnoreCase)
+            || normalized.Equals("/exit", StringComparison.OrdinalIgnoreCase);
+    }
 
     public Task WriteStreamDeltaAsync(string delta, CancellationToken cancellationToken = default)
     {
