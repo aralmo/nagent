@@ -108,7 +108,7 @@ See **Functions** below.
 
 ### `[tools:...]`
 
-Enable LLM tools from this point onward (comma-separated). Built-in tool names and custom tool names are supported. Use `file('path.json')` to enable every tool defined in a JSON file (loaded and registered on first reference).
+Enable LLM tools from this point onward (comma-separated). Built-in tool names and custom tool names are supported. Use `file('path.json')` to enable every tool defined in a JSON file (reloaded from disk each time the tool list is resolved for a completion).
 
 **Example**
 

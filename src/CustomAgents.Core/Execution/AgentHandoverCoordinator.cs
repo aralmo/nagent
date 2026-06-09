@@ -94,6 +94,7 @@ public sealed class AgentHandoverCoordinator(
         context.CurrentBuffer = string.Empty;
         context.CurrentRole = null;
         context.ActiveToolNames.Clear();
+        context.ActiveToolEntries.Clear();
         context.ModelFallbacks.Clear();
         context.InitialHistoryDisplayed = false;
         context.HandoverPerformed = false;

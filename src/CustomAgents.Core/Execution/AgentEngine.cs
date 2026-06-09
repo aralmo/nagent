@@ -61,8 +61,9 @@ public sealed class AgentEngine(
                     break;
 
                 case ToolsNode toolsNode:
+                    context.ActiveToolEntries = toolsNode.Tools.ToList();
                     context.ActiveToolNames = toolRegistry
-                        .ExpandToolNames(toolsNode.Tools, context.WorkingPath, context.TemplatePath)
+                        .ExpandToolNames(context.ActiveToolEntries, context.WorkingPath, context.TemplatePath)
                         .ToList();
                     break;
 

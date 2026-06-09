@@ -28,8 +28,13 @@ public sealed class TurnRunner(
 
         while (true)
         {
-            var tools = context.ActiveToolNames.Count > 0
-                ? toolRegistry.GetSchemas(context.ActiveToolNames)
+            var activeToolNames = toolRegistry.ResolveActiveToolNames(
+                context.ActiveToolEntries,
+                context.ActiveToolNames,
+                context.WorkingPath,
+                context.TemplatePath);
+            var tools = activeToolNames.Count > 0
+                ? toolRegistry.GetSchemas(activeToolNames)
                 : null;
 
             var result = await modelRequestService.CompleteAsync(

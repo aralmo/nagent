@@ -7,8 +7,8 @@ namespace CustomAgents.Core.Tools;
 public sealed class ToolRegistry
 {
     private readonly Dictionary<string, ITool> _tools = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, List<string>> _toolsByFile = new(StringComparer.OrdinalIgnoreCase);
     private readonly ShellRunner _shellRunner;
-    private readonly HashSet<string> _loadedFiles = new(StringComparer.OrdinalIgnoreCase);
 
     public ToolRegistry(IEnumerable<ITool> tools, ShellRunner shellRunner)
     {
@@ -37,17 +37,8 @@ public sealed class ToolRegistry
         }
     }
 
-    public void LoadFromFile(string path)
-    {
-        var resolvedPath = Path.GetFullPath(path);
-        if (!_loadedFiles.Add(resolvedPath))
-        {
-            return;
-        }
-
-        var customTools = CustomToolLoader.LoadFromFile(resolvedPath, _shellRunner);
-        RegisterAll(customTools);
-    }
+    public void LoadFromFile(string path) =>
+        ReloadFromFile(Path.GetFullPath(path));
 
     public IReadOnlyList<string> GetToolNamesFromFile(string path, string workingPath, string? templatePath)
     {
@@ -57,8 +48,48 @@ public sealed class ToolRegistry
             throw new FileNotFoundException($"Custom tools file not found: {resolvedPath}");
         }
 
-        LoadFromFile(resolvedPath);
+        ReloadFromFile(resolvedPath);
         return CustomToolLoader.ReadNamesFromFile(resolvedPath);
+    }
+
+    public IReadOnlyList<string> ResolveActiveToolNames(
+        IReadOnlyList<string> entries,
+        IReadOnlyList<string> fallbackNames,
+        string workingPath,
+        string? templatePath) =>
+        entries.Count > 0
+            ? ExpandToolNames(entries, workingPath, templatePath)
+            : fallbackNames;
+
+    private void ReloadFromFile(string resolvedPath)
+    {
+        var customTools = CustomToolLoader.LoadFromFile(resolvedPath, _shellRunner);
+
+        if (_toolsByFile.TryGetValue(resolvedPath, out var previousNames))
+        {
+            foreach (var name in previousNames)
+            {
+                if (_tools.TryGetValue(name, out var existing) && existing is ShellCommandTool)
+                {
+                    _tools.Remove(name);
+                }
+            }
+        }
+
+        var newNames = new List<string>();
+        foreach (var tool in customTools)
+        {
+            if (_tools.TryGetValue(tool.Name, out var existing) && existing is not ShellCommandTool)
+            {
+                throw new InvalidOperationException(
+                    $"Custom tool '{tool.Name}' in '{resolvedPath}' conflicts with a built-in tool.");
+            }
+
+            _tools[tool.Name] = tool;
+            newNames.Add(tool.Name);
+        }
+
+        _toolsByFile[resolvedPath] = newNames;
     }
 
     public IReadOnlyList<string> ExpandToolNames(

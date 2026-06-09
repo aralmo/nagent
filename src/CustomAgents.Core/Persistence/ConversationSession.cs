@@ -14,6 +14,7 @@ public sealed class ConversationSession
     public List<SerializedChatMessage> History { get; set; } = [];
     public Dictionary<string, string> Variables { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public List<string> ActiveToolNames { get; set; } = [];
+    public List<string> ActiveToolEntries { get; set; } = [];
     public List<string> ModelFallbacks { get; set; } = [];
     public string? CurrentRole { get; set; }
     public string CurrentBuffer { get; set; } = string.Empty;

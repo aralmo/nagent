@@ -8,6 +8,7 @@ public sealed class AgentContext
     public ChatRole? CurrentRole { get; set; }
     public string CurrentBuffer { get; set; } = string.Empty;
     public List<string> ActiveToolNames { get; set; } = [];
+    public List<string> ActiveToolEntries { get; set; } = [];
     public List<ModelRef> ModelFallbacks { get; set; } = [];
     public Dictionary<string, string> Variables { get; } = new(StringComparer.OrdinalIgnoreCase)
     {

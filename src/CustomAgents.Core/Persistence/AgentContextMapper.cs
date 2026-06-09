@@ -24,6 +24,7 @@ public static class AgentContextMapper
             History = context.History.Select(SerializeMessage).ToList(),
             Variables = new Dictionary<string, string>(context.Variables, StringComparer.OrdinalIgnoreCase),
             ActiveToolNames = [.. context.ActiveToolNames],
+            ActiveToolEntries = [.. context.ActiveToolEntries],
             ModelFallbacks = context.ModelFallbacks.Select(m => m.ToString()).ToList(),
             CurrentRole = context.CurrentRole?.ToApiString(),
             CurrentBuffer = context.CurrentBuffer,
@@ -45,6 +46,7 @@ public static class AgentContextMapper
         context.InitialHistoryDisplayed = session.InitialHistoryDisplayed;
         context.HandoverPerformed = session.HandoverPerformed;
         context.ActiveToolNames = [.. session.ActiveToolNames];
+        context.ActiveToolEntries = [.. session.ActiveToolEntries];
         context.ModelFallbacks = session.ModelFallbacks.Select(ModelRef.Parse).ToList();
 
         context.History.Clear();
