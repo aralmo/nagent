@@ -44,16 +44,27 @@ public interface IModelProvider
 {
     string ProviderName { get; }
     IAsyncEnumerable<StreamChunk> StreamChatAsync(ChatCompletionRequest request, CancellationToken cancellationToken = default);
+
+    TimeSpan? GetRetryDelay(ProviderException ex) => null;
 }
 
 public sealed class ProviderException : Exception
 {
     public int? StatusCode { get; }
+    public string? ResponseBody { get; }
+    public IReadOnlyDictionary<string, string>? ResponseHeaders { get; }
 
-    public ProviderException(string message, int? statusCode = null, Exception? inner = null)
+    public ProviderException(
+        string message,
+        int? statusCode = null,
+        string? responseBody = null,
+        IReadOnlyDictionary<string, string>? responseHeaders = null,
+        Exception? inner = null)
         : base(message, inner)
     {
         StatusCode = statusCode;
+        ResponseBody = responseBody;
+        ResponseHeaders = responseHeaders;
     }
 
     public bool IsClientError => StatusCode is >= 400 and < 500;

@@ -11,6 +11,24 @@ public sealed class OpenRouterProvider(HttpClient httpClient) : IModelProvider
 {
     public string ProviderName => "openrouter";
 
+    public TimeSpan? GetRetryDelay(ProviderException ex)
+    {
+        if (ex.StatusCode != 429)
+        {
+            return null;
+        }
+
+        var resetMs = TryGetRateLimitReset(ex);
+        if (resetMs is null)
+        {
+            return null;
+        }
+
+        var resetTime = DateTimeOffset.FromUnixTimeMilliseconds(resetMs.Value);
+        var delay = resetTime - DateTimeOffset.UtcNow;
+        return delay > TimeSpan.Zero ? delay : TimeSpan.Zero;
+    }
+
     public async IAsyncEnumerable<StreamChunk> StreamChatAsync(
         ChatCompletionRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -38,7 +56,9 @@ public sealed class OpenRouterProvider(HttpClient httpClient) : IModelProvider
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             throw new ProviderException(
                 $"OpenRouter request failed ({(int)response.StatusCode}): {body}",
-                (int)response.StatusCode);
+                (int)response.StatusCode,
+                body,
+                ProviderHttpHelper.CollectHeaders(response));
         }
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -142,6 +162,42 @@ public sealed class OpenRouterProvider(HttpClient httpClient) : IModelProvider
         }
 
         return payload;
+    }
+
+    private static long? TryGetRateLimitReset(ProviderException ex)
+    {
+        if (ex.ResponseHeaders is not null)
+        {
+            foreach (var (key, value) in ex.ResponseHeaders)
+            {
+                if (key.Equals("X-RateLimit-Reset", StringComparison.OrdinalIgnoreCase)
+                    && long.TryParse(value, out var headerMs))
+                {
+                    return headerMs;
+                }
+            }
+        }
+
+        if (string.IsNullOrEmpty(ex.ResponseBody))
+        {
+            return null;
+        }
+
+        try
+        {
+            var node = JsonNode.Parse(ex.ResponseBody);
+            var reset = node?["error"]?["metadata"]?["headers"]?["X-RateLimit-Reset"]?.GetValue<string>();
+            if (long.TryParse(reset, out var bodyMs))
+            {
+                return bodyMs;
+            }
+        }
+        catch (JsonException)
+        {
+            // ignore malformed error body
+        }
+
+        return null;
     }
 
     private static IEnumerable<StreamChunk> ParseSseChunk(string data)

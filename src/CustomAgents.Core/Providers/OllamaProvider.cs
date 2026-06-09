@@ -30,7 +30,9 @@ public sealed class OllamaProvider(HttpClient httpClient, string baseUrl = "http
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             throw new ProviderException(
                 $"Ollama request failed ({(int)response.StatusCode}): {body}",
-                (int)response.StatusCode);
+                (int)response.StatusCode,
+                body,
+                ProviderHttpHelper.CollectHeaders(response));
         }
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);

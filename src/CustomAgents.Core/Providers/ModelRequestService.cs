@@ -38,6 +38,7 @@ public sealed class ModelRequestService(
         await logger.LogAsync(requestLog, cancellationToken);
 
         ProviderException? lastError = null;
+        ModelRef? lastModel = null;
 
         for (var round = 0; round <= PostFallbackRetries; round++)
         {
@@ -57,18 +58,23 @@ public sealed class ModelRequestService(
                 catch (ProviderException ex)
                 {
                     lastError = ex;
+                    lastModel = model;
                     await host.WriteSystemMessageAsync(
                         $"Model {model} failed: {ex.Message}",
                         cancellationToken);
                 }
             }
 
-            if (lastError?.IsClientError == true && round < PostFallbackRetries)
+            if (lastError is not null && lastModel is not null && round < PostFallbackRetries)
             {
-                await host.WriteSystemMessageAsync(
-                    $"All model fallbacks failed with client error. Retrying in {RetryDelay.TotalSeconds:0} seconds ({round + 1}/{PostFallbackRetries})...",
-                    cancellationToken);
-                await Task.Delay(RetryDelay, cancellationToken);
+                var provider = providerRegistry.GetProvider(lastModel.Provider);
+                var customDelay = provider.GetRetryDelay(lastError);
+                var delay = customDelay ?? RetryDelay;
+                var delayMessage = customDelay is not null
+                    ? $"All model fallbacks failed. Waiting for {lastModel.Provider} rate limit reset ({delay.TotalSeconds:0} seconds, {round + 1}/{PostFallbackRetries})..."
+                    : $"All model fallbacks failed. Retrying in {delay.TotalSeconds:0} seconds ({round + 1}/{PostFallbackRetries})...";
+                await host.WriteSystemMessageAsync(delayMessage, cancellationToken);
+                await Task.Delay(delay, cancellationToken);
                 continue;
             }
 
