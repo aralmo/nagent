@@ -8,9 +8,23 @@
     ]
   },
   {
+    "name": "geolocation",
+    "description": "Get current location based on internet connection",
+    "command": "python tools/geolocation.py",
+    "parameters": []
+  },
+  {
     "name": "weather",
     "description": "Get current weather for a location via wttr.in",
     "command": "python tools/weather.py $location 2",
+    "parameters": [
+      { "name": "location", "description": "City or place name" }
+    ]
+  },
+  {
+    "name": "weather-full",
+    "description": "Get full weather report for a location",
+    "command": "python tools/weather.py $location",
     "parameters": [
       { "name": "location", "description": "City or place name" }
     ]

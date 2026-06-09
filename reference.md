@@ -126,7 +126,7 @@ Enable LLM tools from this point onward (comma-separated). Built-in tool names a
 
 ### `[choose:...]`
 
-Send the following text (until the next label) to the model without history. Jump to the matching label if the response contains exactly one option (case-insensitive, spaces ignored). Retries up to 3 times.
+Send the following text (until the next label) to the model without history. The engine appends `I should respond only with one word from; opt1, opt2` (using the declared options). Neither the choose prompt nor the model's one-word reply is added to chat history. Jump to the matching label if the response contains exactly one option (case-insensitive, spaces ignored). Retries up to 3 times.
 
 | Value | Options separated by `\|` |
 

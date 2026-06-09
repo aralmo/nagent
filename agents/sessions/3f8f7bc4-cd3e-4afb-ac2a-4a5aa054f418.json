@@ -1,0 +1,39 @@
+{
+  "sessionId": "3f8f7bc4-cd3e-4afb-ac2a-4a5aa054f418",
+  "createdAt": "2026-06-09T08:53:55.8702273+00:00",
+  "updatedAt": "2026-06-09T08:54:09.3711169+00:00",
+  "workingPath": "C:\\Users\\aralm\\repo\\custom-agents\\agents",
+  "templatePath": "C:\\Users\\aralm\\repo\\custom-agents\\agents\\bot.md",
+  "initialPrompt": null,
+  "toolFiles": [],
+  "logFilePath": "C:\\Users\\aralm\\repo\\custom-agents\\agents\\logs\\20260609-085355-870.jsonl",
+  "programCounter": 2147483647,
+  "history": [
+    {
+      "role": "system",
+      "content": "You are an expert assistant used to fulfill user instructions.    Current Time: 2026-06-09 10:53:55    Working folder: C:\\Users\\aralm\\repo\\custom-agents\\agents    Shell: cmd, escape with \\\u0022",
+      "toolCallId": null,
+      "name": null,
+      "toolCalls": null
+    }
+  ],
+  "variables": {
+    "workingPath": "C:\\Users\\aralm\\repo\\custom-agents\\agents",
+    "datetime": "2026-06-09 10:53:55",
+    "prompt": "",
+    "completion": ""
+  },
+  "activeToolNames": [],
+  "modelFallbacks": [
+    "openrouter@poolside/laguna-xs.2:free",
+    "openrouter@sourceful/riverflow-v2.5-fast:free",
+    "openrouter@nvidia/nemotron-3-ultra-550b-a55b:free",
+    "openrouter@nvidia/nemotron-3-nano-30b-a3b:free",
+    "ollama@nemotron-mini:4b-instruct-q8_0"
+  ],
+  "currentRole": "user",
+  "currentBuffer": "",
+  "initialPromptConsumed": false,
+  "initialHistoryDisplayed": true,
+  "handoverPerformed": false
+}

@@ -41,7 +41,6 @@ No indications for any special equipment, attire only for the looks or very basi
 I should now based on the following character sheet and comments;
  'loop' if there's still work to do to complete the character sheet.
  'done' if all the fields; name, origin, looks, occupation are filled and no blocking issue is reported.
-I should respond only with one of the two words.
 ** Current **
 {$completion}
 

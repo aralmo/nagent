@@ -216,8 +216,9 @@ public sealed class AgentEngine(
         AgentContext context,
         CancellationToken cancellationToken)
     {
+        FlushBuffer(context);
+        var historyCountBeforeChoose = context.History.Count;
         var promptBuilder = new System.Text.StringBuilder();
-        var startIndex = context.ProgramCounter;
 
         while (context.ProgramCounter < template.Nodes.Count)
         {
@@ -251,6 +252,8 @@ public sealed class AgentEngine(
 
                     if (prompt is null)
                     {
+                        RevertHistoryGrowth(context, historyCountBeforeChoose);
+                        context.CurrentBuffer = string.Empty;
                         await SaveCheckpointAsync(context, context.ProgramCounter - 1, cancellationToken);
                         return false;
                     }
@@ -271,6 +274,7 @@ public sealed class AgentEngine(
             "[$history]",
             VariableSubstitution.SerializeHistory(context.History),
             StringComparison.OrdinalIgnoreCase);
+        promptText = AppendChooseResponseSuffix(promptText, chooseNode.Options);
 
         var savedCompletion = context.Variables.TryGetValue("completion", out var completionValue)
             ? completionValue
@@ -289,6 +293,7 @@ public sealed class AgentEngine(
                 [new ChatMessage { Role = ChatRole.User, Content = promptText }],
                 tools: null,
                 updateCompletion: false,
+                streamToHost: false,
                 cancellationToken: cancellationToken);
 
             selected = MatchChooseOption(result.Content, chooseNode.Options);
@@ -309,9 +314,19 @@ public sealed class AgentEngine(
         }
 
         context.Variables["completion"] = savedCompletion;
+        RevertHistoryGrowth(context, historyCountBeforeChoose);
+        context.CurrentBuffer = string.Empty;
         JumpToLabel(template, context, selected);
         await SaveCheckpointAsync(context, cancellationToken: cancellationToken);
         return true;
+    }
+
+    private static void RevertHistoryGrowth(AgentContext context, int historyCount)
+    {
+        while (context.History.Count > historyCount)
+        {
+            context.History.RemoveAt(context.History.Count - 1);
+        }
     }
 
     private static void JumpToLabel(ParsedTemplate template, AgentContext context, string label)
@@ -364,6 +379,16 @@ public sealed class AgentEngine(
         }
 
         context.CurrentBuffer = string.Empty;
+    }
+
+    private static string AppendChooseResponseSuffix(string promptText, IReadOnlyList<string> options)
+    {
+        if (promptText.Length > 0 && !promptText.EndsWith('\n'))
+        {
+            promptText += '\n';
+        }
+
+        return promptText + $"I should respond only with one word from; {string.Join(", ", options)}";
     }
 
     private static string? MatchChooseOption(string output, IReadOnlyList<string> options)

@@ -38,7 +38,7 @@ public sealed class TurnRunner(
                 tools,
                 context,
                 updateCompletion: true,
-                cancellationToken);
+                cancellationToken: cancellationToken);
 
             if (result.ToolCalls.Count == 0)
             {

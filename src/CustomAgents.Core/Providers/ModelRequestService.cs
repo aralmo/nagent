@@ -19,6 +19,7 @@ public sealed class ModelRequestService(
         IReadOnlyList<ToolSchema>? tools,
         AgentContext? context = null,
         bool updateCompletion = false,
+        bool streamToHost = true,
         CancellationToken cancellationToken = default)
     {
         var requestLog = new
@@ -50,6 +51,7 @@ public sealed class ModelRequestService(
                         tools,
                         context,
                         updateCompletion,
+                        streamToHost,
                         cancellationToken);
                 }
                 catch (ProviderException ex)
@@ -82,6 +84,7 @@ public sealed class ModelRequestService(
         IReadOnlyList<ToolSchema>? tools,
         AgentContext? context,
         bool updateCompletion,
+        bool streamToHost,
         CancellationToken cancellationToken)
     {
         var provider = providerRegistry.GetProvider(model.Provider);
@@ -97,7 +100,7 @@ public sealed class ModelRequestService(
 
         await foreach (var chunk in provider.StreamChatAsync(request, cancellationToken))
         {
-            if (!string.IsNullOrEmpty(chunk.ReasoningDelta))
+            if (streamToHost && !string.IsNullOrEmpty(chunk.ReasoningDelta))
             {
                 await host.WriteThinkingDeltaAsync(chunk.ReasoningDelta, cancellationToken);
             }
@@ -105,7 +108,10 @@ public sealed class ModelRequestService(
             if (!string.IsNullOrEmpty(chunk.TextDelta))
             {
                 contentBuilder.Append(chunk.TextDelta);
-                await host.WriteStreamDeltaAsync(chunk.TextDelta, cancellationToken);
+                if (streamToHost)
+                {
+                    await host.WriteStreamDeltaAsync(chunk.TextDelta, cancellationToken);
+                }
             }
 
             if (chunk.ToolCallDeltas is null)
@@ -132,9 +138,12 @@ public sealed class ModelRequestService(
             .Cast<ToolCall>()
             .ToList();
 
-        foreach (var toolCall in toolCalls)
+        if (streamToHost)
         {
-            await host.WriteToolCallAsync(toolCall.Name, toolCall.ArgumentsJson, cancellationToken);
+            foreach (var toolCall in toolCalls)
+            {
+                await host.WriteToolCallAsync(toolCall.Name, toolCall.ArgumentsJson, cancellationToken);
+            }
         }
 
         var result = new CompletionResult

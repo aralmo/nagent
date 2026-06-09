@@ -1,0 +1,87 @@
+{
+  "sessionId": "bcf50edc-578e-440e-9556-d0e4371e18ce",
+  "createdAt": "2026-06-09T09:03:56.2058135+00:00",
+  "updatedAt": "2026-06-09T09:05:36.1887483+00:00",
+  "workingPath": "C:\\Users\\aralm\\repo\\custom-agents\\agents",
+  "templatePath": "C:\\Users\\aralm\\repo\\custom-agents\\agents\\bot.md",
+  "initialPrompt": null,
+  "toolFiles": [],
+  "logFilePath": "C:\\Users\\aralm\\repo\\custom-agents\\agents\\logs\\20260609-090356-206.jsonl",
+  "programCounter": 25,
+  "history": [
+    {
+      "role": "system",
+      "content": "You are an expert assistant used to fulfill user instructions.    Current Time: 2026-06-09 11:03:56    Working folder: C:\\Users\\aralm\\repo\\custom-agents\\agents",
+      "toolCallId": null,
+      "name": null,
+      "toolCalls": null
+    },
+    {
+      "role": "user",
+      "content": "what is the weather in brunete?",
+      "toolCallId": null,
+      "name": null,
+      "toolCalls": null
+    },
+    {
+      "role": "assistant",
+      "content": "I\u0027ve been instructed to use tools to my discretion to perform a discovery on a reliable way to fulfill the user instructions. If I need to build a tool, I will do it under *working folder*/tools/*tool name* and prefer python, should search to see if there\u0027s a pre-existing tool first. I should keep using tools until I\u0027m done and only respond to the user with the outcome and specifically ask if it\u0027s correct.",
+      "toolCallId": null,
+      "name": null,
+      "toolCalls": null
+    },
+    {
+      "role": "assistant",
+      "content": "\n\n",
+      "toolCallId": null,
+      "name": null,
+      "toolCalls": [
+        {
+          "id": "chatcmpl-tool-a3aa6f9e271812c1",
+          "name": "weather",
+          "argumentsJson": "{\u0022location\u0022: \u0022Brunete\u0022}"
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": "\u2600\uFE0F  \uD83C\uDF21\uFE0F\u002B20\u00B0C \uD83C\uDF2C\uFE0F\u219912km/h",
+      "toolCallId": "chatcmpl-tool-a3aa6f9e271812c1",
+      "name": "weather",
+      "toolCalls": null
+    },
+    {
+      "role": "assistant",
+      "content": "\nThe current weather in Brunete is:\n\n\u2600\uFE0F **Sunny**  \n\uD83C\uDF21\uFE0F **Temperature:** \u002B20\u00B0C  \n\uD83C\uDF2C\uFE0F **Wind:** 12 km/h from the southwest (\u2199)\n\nIs this correct?\n",
+      "toolCallId": null,
+      "name": null,
+      "toolCalls": null
+    }
+  ],
+  "variables": {
+    "workingPath": "C:\\Users\\aralm\\repo\\custom-agents\\agents",
+    "datetime": "2026-06-09 11:03:56",
+    "prompt": "yes",
+    "completion": "\nThe current weather in Brunete is:\n\n\u2600\uFE0F **Sunny**  \n\uD83C\uDF21\uFE0F **Temperature:** \u002B20\u00B0C  \n\uD83C\uDF2C\uFE0F **Wind:** 12 km/h from the southwest (\u2199)\n\nIs this correct?\n"
+  },
+  "activeToolNames": [
+    "shell",
+    "file-read",
+    "file-write",
+    "file-search",
+    "echo-text",
+    "weather"
+  ],
+  "modelFallbacks": [
+    "openrouter@poolside/laguna-xs.2:free",
+    "openrouter@sourceful/riverflow-v2.5-fast:free",
+    "openrouter@nvidia/nemotron-3-ultra-550b-a55b:free",
+    "openrouter@nvidia/nemotron-3-nano-30b-a3b:free",
+    "ollama@nemotron-mini:4b-instruct-q8_0"
+  ],
+  "currentRole": "assistant",
+  "currentBuffer": "",
+  "initialPromptConsumed": false,
+  "initialHistoryDisplayed": true,
+  "handoverPerformed": false
+}
