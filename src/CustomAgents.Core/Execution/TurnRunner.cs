@@ -1,0 +1,184 @@
+using CustomAgents.Core.Domain;
+using CustomAgents.Core.Hosting;
+using CustomAgents.Core.Logging;
+using CustomAgents.Core.Providers;
+using CustomAgents.Core.Tools;
+
+namespace CustomAgents.Core.Execution;
+
+public sealed class TurnRunner(
+    ModelRequestService modelRequestService,
+    ToolRegistry toolRegistry,
+    IAgentHost host,
+    IConversationLogger logger,
+    AgentHandoverCoordinator handoverCoordinator,
+    AgentDelegateCoordinator delegateCoordinator)
+{
+    public async Task<string> RunTurnAsync(
+        AgentContext context,
+        CancellationToken cancellationToken = default)
+    {
+        if (context.ModelFallbacks.Count == 0)
+        {
+            throw new InvalidOperationException("No model fallbacks configured.");
+        }
+
+        var workingMessages = context.History.Select(m => m.Clone()).ToList();
+        var turnStartCount = workingMessages.Count;
+
+        while (true)
+        {
+            var tools = context.ActiveToolNames.Count > 0
+                ? toolRegistry.GetSchemas(context.ActiveToolNames)
+                : null;
+
+            var result = await modelRequestService.CompleteAsync(
+                context.ModelFallbacks,
+                workingMessages,
+                tools,
+                context,
+                updateCompletion: true,
+                cancellationToken);
+
+            if (result.ToolCalls.Count == 0)
+            {
+                workingMessages.Add(new ChatMessage
+                {
+                    Role = ChatRole.Assistant,
+                    Content = result.Content
+                });
+
+                AppendTurnMessages(context, workingMessages, turnStartCount);
+                return result.Content;
+            }
+
+            workingMessages.Add(new ChatMessage
+            {
+                Role = ChatRole.Assistant,
+                Content = result.Content,
+                ToolCalls = result.ToolCalls.ToList()
+            });
+
+            foreach (var toolCall in result.ToolCalls)
+            {
+                await logger.LogAsync(new
+                {
+                    type = "tool_call",
+                    timestamp = DateTimeOffset.UtcNow,
+                    id = toolCall.Id,
+                    name = toolCall.Name,
+                    arguments = toolCall.ArgumentsJson
+                }, cancellationToken);
+
+                string toolResult;
+                if (toolCall.Name.Equals("agent-handover", StringComparison.OrdinalIgnoreCase))
+                {
+                    var (agentPath, prompt) = ParseAgentSubArguments(toolCall.ArgumentsJson);
+                    var snapshot = workingMessages.Select(m => m.Clone()).ToList();
+                    toolResult = await handoverCoordinator.HandoverAsync(
+                        context,
+                        snapshot,
+                        agentPath,
+                        prompt,
+                        cancellationToken);
+
+                    await host.WriteToolResponseAsync(toolCall.Name, toolResult, cancellationToken);
+
+                    await logger.LogAsync(new
+                    {
+                        type = "tool_response",
+                        timestamp = DateTimeOffset.UtcNow,
+                        id = toolCall.Id,
+                        name = toolCall.Name,
+                        content = toolResult
+                    }, cancellationToken);
+
+                    return toolResult;
+                }
+
+                if (toolCall.Name.Equals("agent-delegate", StringComparison.OrdinalIgnoreCase))
+                {
+                    var (agentPath, prompt) = ParseAgentSubArguments(toolCall.ArgumentsJson);
+                    toolResult = await delegateCoordinator.DelegateAsync(
+                        context,
+                        agentPath,
+                        prompt,
+                        cancellationToken);
+
+                    await host.WriteToolResponseAsync(toolCall.Name, toolResult, cancellationToken);
+
+                    await logger.LogAsync(new
+                    {
+                        type = "tool_response",
+                        timestamp = DateTimeOffset.UtcNow,
+                        id = toolCall.Id,
+                        name = toolCall.Name,
+                        content = toolResult
+                    }, cancellationToken);
+
+                    workingMessages.Add(new ChatMessage
+                    {
+                        Role = ChatRole.Tool,
+                        Content = toolResult,
+                        ToolCallId = toolCall.Id,
+                        Name = toolCall.Name
+                    });
+
+                    continue;
+                }
+
+                toolResult = await toolRegistry.InvokeAsync(
+                    toolCall.Name,
+                    toolCall.ArgumentsJson,
+                    context.WorkingPath,
+                    context,
+                    cancellationToken);
+
+                await host.WriteToolResponseAsync(toolCall.Name, toolResult, cancellationToken);
+
+                await logger.LogAsync(new
+                {
+                    type = "tool_response",
+                    timestamp = DateTimeOffset.UtcNow,
+                    id = toolCall.Id,
+                    name = toolCall.Name,
+                    content = toolResult
+                }, cancellationToken);
+
+                workingMessages.Add(new ChatMessage
+                {
+                    Role = ChatRole.Tool,
+                    Content = toolResult,
+                    ToolCallId = toolCall.Id,
+                    Name = toolCall.Name
+                });
+            }
+        }
+    }
+
+    private static (string AgentPath, string? Prompt) ParseAgentSubArguments(string argumentsJson)
+    {
+        var args = System.Text.Json.Nodes.JsonNode.Parse(argumentsJson)?.AsObject()
+            ?? throw new InvalidOperationException("agent tool requires JSON arguments.");
+
+        var agentPath = args["agent"]?.GetValue<string>();
+        if (string.IsNullOrWhiteSpace(agentPath))
+        {
+            throw new InvalidOperationException("agent tool requires 'agent' parameter.");
+        }
+
+        var prompt = args["prompt"]?.GetValue<string>();
+        return (agentPath, prompt);
+    }
+
+    private static void AppendTurnMessages(
+        AgentContext context,
+        List<ChatMessage> workingMessages,
+        int turnStartCount)
+    {
+        for (var i = turnStartCount; i < workingMessages.Count; i++)
+        {
+            context.History.Add(workingMessages[i].Clone());
+        }
+    }
+}
