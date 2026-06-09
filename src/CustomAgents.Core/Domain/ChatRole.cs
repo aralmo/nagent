@@ -27,4 +27,13 @@ public static class ChatRoleExtensions
         "TOOL" => ChatRole.Tool,
         _ => throw new ArgumentException($"Unknown role tag: {tag}")
     };
+
+    public static ChatRole FromApiString(string role) => role.Trim().ToLowerInvariant() switch
+    {
+        "system" => ChatRole.System,
+        "user" => ChatRole.User,
+        "assistant" => ChatRole.Assistant,
+        "tool" => ChatRole.Tool,
+        _ => throw new ArgumentException($"Unknown role: {role}")
+    };
 }

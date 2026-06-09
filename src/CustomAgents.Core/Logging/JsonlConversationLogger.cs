@@ -22,6 +22,17 @@ public sealed class JsonlConversationLogger : IConversationLogger, IAsyncDisposa
         Directory.CreateDirectory(logsDir);
         var fileName = $"{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.jsonl";
         var logFilePath = Path.Combine(logsDir, fileName);
+        return OpenExisting(logFilePath);
+    }
+
+    public static JsonlConversationLogger OpenExisting(string logFilePath)
+    {
+        var logDir = Path.GetDirectoryName(logFilePath);
+        if (!string.IsNullOrEmpty(logDir))
+        {
+            Directory.CreateDirectory(logDir);
+        }
+
         var writer = new StreamWriter(File.Open(logFilePath, FileMode.Append, FileAccess.Write, FileShare.Read))
         {
             AutoFlush = true

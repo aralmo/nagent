@@ -2,6 +2,7 @@ using CustomAgents.Core.Domain;
 using CustomAgents.Core.Hosting;
 using CustomAgents.Core.Logging;
 using CustomAgents.Core.Parsing;
+using CustomAgents.Core.Persistence;
 using CustomAgents.Core.Tools;
 
 namespace CustomAgents.Core.Execution;
@@ -9,7 +10,8 @@ namespace CustomAgents.Core.Execution;
 public sealed class AgentDelegateCoordinator(
     TemplateParser parser,
     IConversationLogger logger,
-    IAgentHost host)
+    IAgentHost host,
+    SessionCheckpointService? checkpointService = null)
 {
     private AgentEngine? _engine;
 
@@ -59,6 +61,11 @@ public sealed class AgentDelegateCoordinator(
             prompt
         }, cancellationToken);
 
+        if (checkpointService is not null)
+        {
+            await checkpointService.SaveAsync(parentContext, cancellationToken: cancellationToken);
+        }
+
         var childContext = CreateChildContext(parentContext, prompt, resolvedPath);
 
         await host.WriteSystemMessageAsync($"Delegating to {agentPath}", cancellationToken);
@@ -81,6 +88,11 @@ public sealed class AgentDelegateCoordinator(
         }, cancellationToken);
 
         await logger.RotateSessionAsync(parentContext.WorkingPath, cancellationToken);
+
+        if (checkpointService is not null)
+        {
+            await checkpointService.SaveAsync(parentContext, cancellationToken: cancellationToken);
+        }
 
         return completion;
     }

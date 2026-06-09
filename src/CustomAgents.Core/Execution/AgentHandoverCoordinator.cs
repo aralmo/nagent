@@ -2,6 +2,7 @@ using CustomAgents.Core.Domain;
 using CustomAgents.Core.Hosting;
 using CustomAgents.Core.Logging;
 using CustomAgents.Core.Parsing;
+using CustomAgents.Core.Persistence;
 using CustomAgents.Core.Tools;
 
 namespace CustomAgents.Core.Execution;
@@ -9,7 +10,8 @@ namespace CustomAgents.Core.Execution;
 public sealed class AgentHandoverCoordinator(
     TemplateParser parser,
     IConversationLogger logger,
-    IAgentHost host)
+    IAgentHost host,
+    SessionCheckpointService? checkpointService = null)
 {
     private AgentEngine? _engine;
 
@@ -69,6 +71,11 @@ public sealed class AgentHandoverCoordinator(
         }, cancellationToken);
 
         ResetContextForHandover(context, prompt, resolvedPath);
+
+        if (checkpointService is not null)
+        {
+            await checkpointService.SaveAsync(context, cancellationToken: cancellationToken);
+        }
 
         await host.WriteSystemMessageAsync($"Handed over to {agentPath}", cancellationToken);
 

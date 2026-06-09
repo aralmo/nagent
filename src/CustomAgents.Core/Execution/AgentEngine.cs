@@ -1,6 +1,7 @@
 using CustomAgents.Core.Domain;
 using CustomAgents.Core.Hosting;
 using CustomAgents.Core.Parsing;
+using CustomAgents.Core.Persistence;
 using CustomAgents.Core.Providers;
 using CustomAgents.Core.Shell;
 using CustomAgents.Core.Tools;
@@ -13,7 +14,8 @@ public sealed class AgentEngine(
     TurnRunner turnRunner,
     ModelRequestService modelRequestService,
     ShellRunner shellRunner,
-    ToolRegistry toolRegistry)
+    ToolRegistry toolRegistry,
+    SessionCheckpointService? checkpointService = null)
 {
     public async Task RunAsync(
         ParsedTemplate template,
@@ -87,6 +89,20 @@ public sealed class AgentEngine(
         }
 
         FlushBuffer(context);
+        await SaveCheckpointAsync(context, cancellationToken: cancellationToken);
+    }
+
+    private async Task SaveCheckpointAsync(
+        AgentContext context,
+        int? programCounterOverride = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (checkpointService is null)
+        {
+            return;
+        }
+
+        await checkpointService.SaveAsync(context, programCounterOverride, cancellationToken);
     }
 
     private async Task ExecuteDoAsync(
@@ -113,12 +129,14 @@ public sealed class AgentEngine(
 
             if (prompt is null)
             {
+                await SaveCheckpointAsync(context, context.ProgramCounter - 1, cancellationToken);
                 context.ProgramCounter = int.MaxValue;
                 return;
             }
 
             context.Variables["prompt"] = prompt;
             context.CurrentBuffer += prompt;
+            await SaveCheckpointAsync(context, cancellationToken: cancellationToken);
             return;
         }
 
@@ -131,11 +149,13 @@ public sealed class AgentEngine(
             var selected = await host.PromptChoiceAsync(message, yesLabel, noLabel, cancellationToken);
             if (selected is null)
             {
+                await SaveCheckpointAsync(context, context.ProgramCounter - 1, cancellationToken);
                 context.ProgramCounter = int.MaxValue;
                 return;
             }
 
             JumpToLabel(template, context, selected);
+            await SaveCheckpointAsync(context, cancellationToken: cancellationToken);
             return;
         }
 
@@ -150,6 +170,7 @@ public sealed class AgentEngine(
             }
 
             context.Variables["completion"] = completion;
+            await SaveCheckpointAsync(context, cancellationToken: cancellationToken);
             return;
         }
 
@@ -230,6 +251,7 @@ public sealed class AgentEngine(
 
                     if (prompt is null)
                     {
+                        await SaveCheckpointAsync(context, context.ProgramCounter - 1, cancellationToken);
                         return false;
                     }
 
@@ -288,6 +310,7 @@ public sealed class AgentEngine(
 
         context.Variables["completion"] = savedCompletion;
         JumpToLabel(template, context, selected);
+        await SaveCheckpointAsync(context, cancellationToken: cancellationToken);
         return true;
     }
 
