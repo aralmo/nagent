@@ -16,7 +16,7 @@ public sealed class AgentHandoverTool : ITool
             ["agent"] = new JsonObject
             {
                 ["type"] = "string",
-                ["description"] = "Relative path to the agent template .md file from the working directory."
+                ["description"] = "Agent template filename or path. Bare filenames are resolved from the working directory, then from workingPath/.agents/."
             },
             ["prompt"] = new JsonObject
             {

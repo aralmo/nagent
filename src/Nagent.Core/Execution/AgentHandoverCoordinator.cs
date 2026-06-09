@@ -32,7 +32,7 @@ public sealed class AgentHandoverCoordinator(
         string resolvedPath;
         try
         {
-            resolvedPath = PathResolver.Resolve(agentPath, context.WorkingPath);
+            resolvedPath = PathResolver.ResolveAgent(agentPath, context.WorkingPath);
         }
         catch (Exception ex)
         {

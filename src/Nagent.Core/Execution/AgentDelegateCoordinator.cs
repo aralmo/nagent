@@ -31,7 +31,7 @@ public sealed class AgentDelegateCoordinator(
         string resolvedPath;
         try
         {
-            resolvedPath = PathResolver.Resolve(agentPath, parentContext.WorkingPath);
+            resolvedPath = PathResolver.ResolveAgent(agentPath, parentContext.WorkingPath);
         }
         catch (Exception ex)
         {

@@ -34,12 +34,24 @@ internal static class Program
             return await RunResumeAsync(launch);
         }
 
-        if (!File.Exists(launch.TemplatePath!))
+        string resolvedTemplate;
+        try
+        {
+            resolvedTemplate = PathResolver.ResolveAgent(launch.TemplatePath!, Directory.GetCurrentDirectory());
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            return 1;
+        }
+
+        if (!File.Exists(resolvedTemplate))
         {
             Console.Error.WriteLine($"Template file not found: {launch.TemplatePath}");
             return 1;
         }
 
+        launch.TemplatePath = resolvedTemplate;
         return await RunNewSessionAsync(launch);
     }
 
