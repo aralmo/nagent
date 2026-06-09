@@ -326,7 +326,7 @@ Define shell-based tools in a JSON file and load them via `--tools` or `file('..
 **CLI**
 
 ```bash
-customagent agents/bot.md --tools agents/example-tools.json
+nagent agents/bot.md --tools agents/custom-tools.json
 ```
 
 **JSON shape**
@@ -360,7 +360,7 @@ When a custom tool runs, `$name` tokens in `command` are replaced with shell-quo
 
 If a parameter and an agent variable share a name, the tool parameter wins. Missing required parameters produce an error.
 
-**Example file** — see [agents/example-tools.json](agents/example-tools.json).
+**Example file** — see [agents/custom-tools.json](agents/custom-tools.json).
 
 ---
 

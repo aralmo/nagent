@@ -2,9 +2,9 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $publishDir = Join-Path $repoRoot "publish"
-$projectPath = Join-Path $repoRoot "src/CustomAgents.Cli/CustomAgents.Cli.csproj"
+$projectPath = Join-Path $repoRoot "src/Nagent.Cli/Nagent.Cli.csproj"
 
-Write-Host "Publishing CustomAgents CLI to $publishDir..."
+Write-Host "Publishing nagent CLI to $publishDir..."
 
 dotnet publish $projectPath `
     -c Release `
@@ -33,4 +33,4 @@ if ($newPath -ne $userPath) {
     Write-Host "Added $publishDirFull to user PATH."
 }
 
-Write-Host "Publish complete: $(Join-Path $publishDir 'customagent.exe')"
+Write-Host "Publish complete: $(Join-Path $publishDir 'nagent.exe')"

@@ -1,4 +1,4 @@
-using CustomAgents.Core.Parsing;
+using Nagent.Core.Parsing;
 var parser = new TemplateParser();
 var content = File.ReadAllText("agents/prompt-yesno-multiline-test.md");
 try {

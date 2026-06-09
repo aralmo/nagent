@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Nagent.Cli/Nagent.Cli.csproj" />
+    <Project Path="src/Nagent.Core/Nagent.Core.csproj" />
+  </Folder>
+</Solution>

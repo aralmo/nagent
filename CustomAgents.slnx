@@ -1,6 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/CustomAgents.Cli/CustomAgents.Cli.csproj" />
-    <Project Path="src/CustomAgents.Core/CustomAgents.Core.csproj" />
-  </Folder>
-</Solution>
