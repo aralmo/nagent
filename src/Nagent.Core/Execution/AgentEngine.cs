@@ -279,7 +279,7 @@ public sealed class AgentEngine(
         var promptText = promptBuilder.ToString();
         promptText = promptText.Replace(
             "[$history]",
-            VariableSubstitution.SerializeHistory(context.History),
+            VariableSubstitution.TryGetValue("history", context, out var history) ? history : string.Empty,
             StringComparison.OrdinalIgnoreCase);
         promptText = AppendChooseResponseSuffix(promptText, chooseNode.Options);
 

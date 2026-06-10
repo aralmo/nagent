@@ -11,6 +11,17 @@ public static partial class VariableSubstitution
     [GeneratedRegex(@"(?<!\{)\$(\w+)(?!\})")]
     private static partial Regex BareVariableRegex();
 
+    public static bool TryGetValue(string key, AgentContext context, out string value)
+    {
+        if (key.Equals("history", StringComparison.OrdinalIgnoreCase))
+        {
+            value = SerializeHistory(context.History);
+            return true;
+        }
+
+        return context.Variables.TryGetValue(key, out value!);
+    }
+
     public static string Substitute(string input, AgentContext context)
     {
         if (string.IsNullOrEmpty(input))
@@ -21,13 +32,13 @@ public static partial class VariableSubstitution
         var result = BraceVariableRegex().Replace(input, match =>
         {
             var key = match.Groups[1].Value;
-            return context.Variables.TryGetValue(key, out var value) ? value : match.Value;
+            return TryGetValue(key, context, out var value) ? value : match.Value;
         });
 
         result = BareVariableRegex().Replace(result, match =>
         {
             var key = match.Groups[1].Value;
-            return context.Variables.TryGetValue(key, out var value) ? value : match.Value;
+            return TryGetValue(key, context, out var value) ? value : match.Value;
         });
 
         return result;

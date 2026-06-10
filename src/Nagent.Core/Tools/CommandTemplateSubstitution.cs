@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Nagent.Core.Domain;
+using Nagent.Core.Variables;
 
 namespace Nagent.Core.Tools;
 
@@ -24,6 +25,8 @@ public static partial class CommandTemplateSubstitution
             {
                 values[key] = value;
             }
+
+            values["history"] = VariableSubstitution.SerializeHistory(context.History);
         }
 
         foreach (var property in arguments)

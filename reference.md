@@ -14,6 +14,7 @@ Substituted at runtime via `{$name}` or `$name`.
 | `$datetime` | Current date/time (`yyyy-MM-dd HH:mm:ss`) |
 | `$prompt` | Last user input from `do:prompt()` |
 | `$completion` | Last assistant text from `do:turn()` |
+| `$history` | Serialized conversation history in plain text |
 
 **Example**
 
@@ -25,7 +26,17 @@ Search for: {$prompt}
 Latest result: {$completion}
 ```
 
-**Choose-only placeholder:** `[$history]` — replaced with serialized chat history inside `[choose:...]` blocks.
+**History example**
+
+```markdown
+[role:USER]
+Prior conversation:
+{$history}
+
+New request: {$prompt}
+```
+
+**Choose alias:** `[$history]` inside `[choose:...]` blocks is equivalent to `{$history}`.
 
 ---
 
@@ -377,7 +388,7 @@ nagent agents/bot.md --tools agents/custom-tools.json
 When a custom tool runs, `$name` tokens in `command` are replaced with shell-quoted values:
 
 1. Tool parameters from the LLM call (e.g. `{ "text": "hello" }`)
-2. Agent variables: `$workingPath`, `$datetime`, `$prompt`, `$completion`
+2. Agent variables: `$workingPath`, `$datetime`, `$prompt`, `$completion`, `$history`
 
 If a parameter and an agent variable share a name, the tool parameter wins. Missing required parameters produce an error.
 
