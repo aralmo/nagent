@@ -6,15 +6,15 @@ public static class ShellQuoter
     {
         if (OperatingSystem.IsWindows())
         {
-            return QuoteForCmd(value);
+            return QuoteForPowerShell(value);
         }
 
         return QuoteForBash(value);
     }
 
-    private static string QuoteForCmd(string value)
+    private static string QuoteForPowerShell(string value)
     {
-        return "\"" + value.Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
+        return "'" + value.Replace("'", "''", StringComparison.Ordinal) + "'";
     }
 
     private static string QuoteForBash(string value)

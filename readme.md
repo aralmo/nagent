@@ -27,6 +27,8 @@ nagent <template.md> [--prompt <initial prompt>] [--tools <tools.json>]...
 nagent --resume <sessionId>
 ```
 
+Bare template filenames (e.g. `planner.md`) are resolved from the current working directory, then from `<workingPath>/.agents/`.
+
 Completions are streamed. If the template ends without a loop, the session exits (no extra prompts).
 
 ## Session persistence
@@ -38,8 +40,8 @@ Session: <guid>
 Resume with: nagent --resume <guid>
 ```
 
-Session snapshots are stored at `<workingPath>/.agent/sessions/<guid>.json`. A global index under `%LOCALAPPDATA%/nagent/session-index/` maps session IDs to snapshot paths so `--resume` needs no other arguments — template, tools, working directory, and conversation state are restored from the snapshot.
+Session snapshots are stored at `<workingPath>/.agents/sessions/<guid>.json`. A global index under `%LOCALAPPDATA%/nagent/session-index/` maps session IDs to snapshot paths so `--resume` needs no other arguments — template, tools, working directory, and conversation state are restored from the snapshot.
 
 ## Logging
 
-Each conversation writes a JSON Lines log under `<workingPath>/.agent/logs/` with requests, tool calls, and responses. Resumed sessions append to the same log file. Delegation and handover rotate to separate log sessions.
+Each conversation writes a JSON Lines log under `<workingPath>/.agents/logs/` with requests, tool calls, and responses. Resumed sessions append to the same log file. Delegation and handover rotate to separate log sessions.

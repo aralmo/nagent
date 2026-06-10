@@ -12,7 +12,7 @@ public sealed class SessionStore : ISessionStore
     };
 
     public static string GetSessionFilePath(string workingPath, string sessionId) =>
-        Path.Combine(workingPath, ".agent", "sessions", $"{sessionId}.json");
+        Path.Combine(workingPath, ".agents", "sessions", $"{sessionId}.json");
 
     public static string GetIndexFilePath(string sessionId)
     {

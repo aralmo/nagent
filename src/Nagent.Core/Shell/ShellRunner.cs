@@ -116,10 +116,12 @@ public sealed class ShellRunner
     {
         if (OperatingSystem.IsWindows())
         {
-            psi.FileName = "cmd.exe";
-            psi.ArgumentList.Add("/d");
-            psi.ArgumentList.Add("/c");
-            psi.ArgumentList.Add($"chcp 65001 >nul & {command}");
+            psi.FileName = "powershell.exe";
+            psi.ArgumentList.Add("-NoProfile");
+            psi.ArgumentList.Add("-NonInteractive");
+            psi.ArgumentList.Add("-Command");
+            psi.ArgumentList.Add(
+                "$OutputEncoding = [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); " + command);
             return;
         }
 

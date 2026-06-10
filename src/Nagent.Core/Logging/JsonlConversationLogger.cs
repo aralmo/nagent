@@ -18,7 +18,7 @@ public sealed class JsonlConversationLogger : IConversationLogger, IAsyncDisposa
 
     public static JsonlConversationLogger Create(string workingPath)
     {
-        var logsDir = Path.Combine(workingPath, ".agent", "logs");
+        var logsDir = Path.Combine(workingPath, ".agents", "logs");
         Directory.CreateDirectory(logsDir);
         var fileName = $"{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.jsonl";
         var logFilePath = Path.Combine(logsDir, fileName);
@@ -60,7 +60,7 @@ public sealed class JsonlConversationLogger : IConversationLogger, IAsyncDisposa
         try
         {
             await _writer.DisposeAsync();
-            var logsDir = Path.Combine(workingPath, ".agent", "logs");
+            var logsDir = Path.Combine(workingPath, ".agents", "logs");
             Directory.CreateDirectory(logsDir);
             var fileName = $"{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.jsonl";
             LogFilePath = Path.Combine(logsDir, fileName);

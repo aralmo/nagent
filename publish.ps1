@@ -20,12 +20,15 @@ $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ([string]::IsNullOrWhiteSpace($userPath)) {
     $newPath = $publishDirFull
 }
-elseif ($userPath.Split(';') -notcontains $publishDirFull) {
-    $newPath = "$userPath;$publishDirFull"
-}
 else {
-    $newPath = $userPath
-    Write-Host "Publish directory already on user PATH."
+    $segments = $userPath.Split(';') | Where-Object { -not [string]::IsNullOrWhiteSpace($_) -and $_ -ne $publishDirFull }
+    $newPath = ($publishDirFull, $segments) -join ';'
+    if ($userPath.Split(';') -contains $publishDirFull) {
+        Write-Host "Moved publish directory to front of user PATH."
+    }
+    else {
+        Write-Host "Prepended publish directory to user PATH."
+    }
 }
 
 if ($newPath -ne $userPath) {
