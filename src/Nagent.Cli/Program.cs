@@ -232,9 +232,11 @@ internal static class Program
             toolRegistry.LoadFromFile(toolFile);
         }
 
+        var shellBlockExecutor = new ShellBlockExecutor(shellRunner, host, logger);
         var turnRunner = new TurnRunner(
             modelRequestService,
             toolRegistry,
+            shellBlockExecutor,
             host,
             logger,
             handoverCoordinator,

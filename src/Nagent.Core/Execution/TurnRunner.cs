@@ -9,6 +9,7 @@ namespace Nagent.Core.Execution;
 public sealed class TurnRunner(
     ModelRequestService modelRequestService,
     ToolRegistry toolRegistry,
+    ShellBlockExecutor shellBlockExecutor,
     IAgentHost host,
     IConversationLogger logger,
     AgentHandoverCoordinator handoverCoordinator,
@@ -48,14 +49,30 @@ public sealed class TurnRunner(
 
             if (result.ToolCalls.Count == 0)
             {
+                var processed = await shellBlockExecutor.ProcessAsync(
+                    result.Content,
+                    context,
+                    cancellationToken);
+                var finalContent = processed.StrippedContent;
+                context.Variables["completion"] = finalContent;
+
                 workingMessages.Add(new ChatMessage
                 {
                     Role = ChatRole.Assistant,
-                    Content = result.Content
+                    Content = finalContent
                 });
 
+                if (processed.InjectedUserMessage is not null)
+                {
+                    workingMessages.Add(new ChatMessage
+                    {
+                        Role = ChatRole.User,
+                        Content = processed.InjectedUserMessage
+                    });
+                }
+
                 AppendTurnMessages(context, workingMessages, turnStartCount);
-                return result.Content;
+                return finalContent;
             }
 
             workingMessages.Add(new ChatMessage

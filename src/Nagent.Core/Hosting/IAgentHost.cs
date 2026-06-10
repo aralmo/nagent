@@ -14,6 +14,7 @@ public interface IAgentHost
     Task WriteThinkingDeltaAsync(string delta, CancellationToken cancellationToken = default);
     Task WriteToolCallAsync(string name, string argumentsJson, CancellationToken cancellationToken = default);
     Task WriteToolResponseAsync(string name, string content, CancellationToken cancellationToken = default);
+    Task WriteShellBlockAsync(string command, string output, bool silent, CancellationToken cancellationToken = default);
     Task WriteSystemMessageAsync(string message, CancellationToken cancellationToken = default);
     Task WriteHistoryMessageAsync(ChatRole role, string content, CancellationToken cancellationToken = default);
     Task WaitForContinueAsync(CancellationToken cancellationToken = default);

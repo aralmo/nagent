@@ -133,6 +133,26 @@ public sealed class ConsoleAgentHost(bool noOutput = false) : IAgentHost
         return Task.CompletedTask;
     }
 
+    public Task WriteShellBlockAsync(string command, string output, bool silent, CancellationToken cancellationToken = default)
+    {
+        if (_noOutput)
+        {
+            return Task.CompletedTask;
+        }
+
+        EndResponse();
+        var label = silent ? "[shell-silent]" : "[shell]";
+        var color = silent ? ConsoleColor.DarkGray : ConsoleColor.Magenta;
+        Console.WriteLine();
+        WriteColored(label, color);
+        Console.WriteLine();
+        WriteColored(command, color);
+        Console.WriteLine();
+        WriteColored(Truncate(output, 4000), silent ? ConsoleColor.DarkGray : ConsoleColor.DarkMagenta);
+        Console.WriteLine();
+        return Task.CompletedTask;
+    }
+
     public Task WriteSystemMessageAsync(string message, CancellationToken cancellationToken = default)
     {
         if (_noOutput)

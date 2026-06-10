@@ -199,6 +199,27 @@ Summarize the notes above.
 [do:turn()]
 ```
 
+After a text-only completion, fenced blocks in the assistant response are executed automatically:
+
+| Fence | Behavior |
+|---|---|
+| ` ```shell ` | Run command(s); print output on console; inject output into chat history as a USER message for the next turn; remove block from stored assistant text |
+| ` ```shell-silent ` | Run command(s); print output on console only; remove block from stored assistant text |
+
+Output from `shell` blocks is injected once per turn — the model is **not** called again in the same turn. The next `[do:turn()]` sees the injected output.
+
+This differs from `[shell:...]`, which runs at template execution time (before or between turns), and from the `shell` tool, which the model invokes during a turn.
+
+**Example** (model output during a turn):
+
+````markdown
+Checking disk usage:
+
+```shell
+df -h
+```
+````
+
 ---
 
 ### `prompt_yesno(message, yes|no)`
