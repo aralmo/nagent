@@ -16,4 +16,5 @@ public interface IAgentHost
     Task WriteToolResponseAsync(string name, string content, CancellationToken cancellationToken = default);
     Task WriteSystemMessageAsync(string message, CancellationToken cancellationToken = default);
     Task WriteHistoryMessageAsync(ChatRole role, string content, CancellationToken cancellationToken = default);
+    Task WaitForContinueAsync(CancellationToken cancellationToken = default);
 }

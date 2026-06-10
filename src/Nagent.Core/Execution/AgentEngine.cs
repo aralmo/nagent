@@ -171,6 +171,11 @@ public sealed class AgentEngine(
                 return;
             }
 
+            if (context.Pause)
+            {
+                await host.WaitForContinueAsync(cancellationToken);
+            }
+
             context.Variables["completion"] = completion;
             await SaveCheckpointAsync(context, cancellationToken: cancellationToken);
             return;

@@ -146,6 +146,16 @@ public sealed class ConsoleAgentHost(bool noOutput = false) : IAgentHost
         return Task.CompletedTask;
     }
 
+    public Task WaitForContinueAsync(CancellationToken cancellationToken = default)
+    {
+        EndResponse();
+        Console.WriteLine();
+        WriteColored("Press any key to continue...", ConsoleColor.DarkGray);
+        Console.ReadKey(intercept: true);
+        Console.WriteLine();
+        return Task.CompletedTask;
+    }
+
     public Task WriteHistoryMessageAsync(ChatRole role, string content, CancellationToken cancellationToken = default)
     {
         if (_noOutput)

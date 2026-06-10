@@ -94,7 +94,8 @@ internal static class Program
                 WorkingPath = workingPath,
                 TemplatePath = Path.GetFullPath(launch.TemplatePath!),
                 InitialPrompt = launch.InitialPrompt,
-                SuppressOutput = launch.NoOutput
+                SuppressOutput = launch.NoOutput,
+                Pause = launch.Pause
             };
             context.InitializeVariables();
 
@@ -168,7 +169,8 @@ internal static class Program
             var context = new AgentContext
             {
                 WorkingPath = session.WorkingPath,
-                SuppressOutput = launch.NoOutput
+                SuppressOutput = launch.NoOutput,
+                Pause = launch.Pause
             };
             AgentContextMapper.ApplyToContext(session, context);
             context.RefreshDateTime();
@@ -283,6 +285,12 @@ internal static class Program
                     continue;
                 }
 
+                if (args[i] == "--pause")
+                {
+                    launch.Pause = true;
+                    continue;
+                }
+
                 error = $"Unknown argument: {args[i]}";
                 return false;
             }
@@ -311,6 +319,12 @@ internal static class Program
                 continue;
             }
 
+            if (args[i] == "--pause")
+            {
+                launch.Pause = true;
+                continue;
+            }
+
             error = $"Unknown argument: {args[i]}";
             return false;
         }
@@ -321,8 +335,8 @@ internal static class Program
     private static void PrintUsage()
     {
         Console.WriteLine("Usage:");
-        Console.WriteLine("  nagent <template.md> [--prompt <initial prompt>] [--tools <tools.json>]... [--no-output]");
-        Console.WriteLine("  nagent --resume <sessionId> [--no-output]");
+        Console.WriteLine("  nagent <template.md> [--prompt <initial prompt>] [--tools <tools.json>]... [--no-output] [--pause]");
+        Console.WriteLine("  nagent --resume <sessionId> [--no-output] [--pause]");
     }
 
     internal sealed class LaunchArgs
@@ -332,6 +346,7 @@ internal static class Program
         public string? TemplatePath { get; set; }
         public string? InitialPrompt { get; set; }
         public bool NoOutput { get; set; }
+        public bool Pause { get; set; }
         public List<string> ToolFiles { get; } = [];
     }
 }
