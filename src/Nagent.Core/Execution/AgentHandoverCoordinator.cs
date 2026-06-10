@@ -21,7 +21,7 @@ public sealed class AgentHandoverCoordinator(
         AgentContext context,
         IReadOnlyList<ChatMessage> conversationSnapshot,
         string agentPath,
-        string? prompt,
+        string prompt,
         CancellationToken cancellationToken = default)
     {
         if (_engine is null)
@@ -88,7 +88,7 @@ public sealed class AgentHandoverCoordinator(
         return $"Handed over to {resolvedPath}";
     }
 
-    private static void ResetContextForHandover(AgentContext context, string? prompt, string templatePath)
+    private static void ResetContextForHandover(AgentContext context, string prompt, string templatePath)
     {
         context.History.Clear();
         context.CurrentBuffer = string.Empty;
@@ -101,10 +101,6 @@ public sealed class AgentHandoverCoordinator(
         context.ProgramCounter = 0;
         context.TemplatePath = templatePath;
         context.InitializeVariables();
-
-        if (!string.IsNullOrEmpty(prompt))
-        {
-            context.Variables["prompt"] = prompt;
-        }
+        context.Variables["prompt"] = prompt;
     }
 }

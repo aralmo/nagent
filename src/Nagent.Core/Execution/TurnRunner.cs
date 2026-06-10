@@ -173,7 +173,7 @@ public sealed class TurnRunner(
     private static bool IsToolError(string toolResult) =>
         toolResult.StartsWith("Error:", StringComparison.OrdinalIgnoreCase);
 
-    private static (string AgentPath, string? Prompt) ParseAgentSubArguments(string argumentsJson)
+    private static (string AgentPath, string Prompt) ParseAgentSubArguments(string argumentsJson)
     {
         var args = System.Text.Json.Nodes.JsonNode.Parse(argumentsJson)?.AsObject()
             ?? throw new InvalidOperationException("agent tool requires JSON arguments.");
@@ -185,6 +185,11 @@ public sealed class TurnRunner(
         }
 
         var prompt = args["prompt"]?.GetValue<string>();
+        if (string.IsNullOrWhiteSpace(prompt))
+        {
+            throw new InvalidOperationException("agent tool requires 'prompt' parameter.");
+        }
+
         return (agentPath, prompt);
     }
 

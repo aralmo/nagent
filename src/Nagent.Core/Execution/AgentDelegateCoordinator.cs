@@ -20,7 +20,7 @@ public sealed class AgentDelegateCoordinator(
     public async Task<string> DelegateAsync(
         AgentContext parentContext,
         string agentPath,
-        string? prompt,
+        string prompt,
         CancellationToken cancellationToken = default)
     {
         if (_engine is null)
@@ -97,7 +97,7 @@ public sealed class AgentDelegateCoordinator(
         return completion;
     }
 
-    private static AgentContext CreateChildContext(AgentContext parentContext, string? prompt, string templatePath)
+    private static AgentContext CreateChildContext(AgentContext parentContext, string prompt, string templatePath)
     {
         var childContext = new AgentContext
         {
@@ -107,11 +107,7 @@ public sealed class AgentDelegateCoordinator(
             SuppressOutput = parentContext.SuppressOutput
         };
         childContext.InitializeVariables();
-
-        if (!string.IsNullOrEmpty(prompt))
-        {
-            childContext.Variables["prompt"] = prompt;
-        }
+        childContext.Variables["prompt"] = prompt;
 
         return childContext;
     }

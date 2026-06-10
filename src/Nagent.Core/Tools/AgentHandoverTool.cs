@@ -21,10 +21,10 @@ public sealed class AgentHandoverTool : ITool
             ["prompt"] = new JsonObject
             {
                 ["type"] = "string",
-                ["description"] = "Optional prompt to set as $prompt on the new agent (does not skip do:prompt())."
+                ["description"] = "Prompt to set as $prompt on the new agent (does not skip do:prompt())."
             }
         },
-        ["required"] = new JsonArray("agent")
+        ["required"] = new JsonArray("agent", "prompt")
     };
 
     public Task<string> InvokeAsync(

@@ -317,7 +317,7 @@ End the current agent, clear history, and run another template.
 | Param | Required | Description |
 |---|---|---|
 | `agent` | yes | Path to agent `.md` |
-| `prompt` | no | Sets child's `$prompt` (does not skip `do:prompt()`) |
+| `prompt` | yes | Sets child's `$prompt` (does not skip `do:prompt()`) |
 
 ```json
 { "agent": "task-bot.md", "prompt": "Fix the login bug" }
@@ -332,7 +332,7 @@ Run another template in an isolated session. Parent continues after the child fi
 | Param | Required | Description |
 |---|---|---|
 | `agent` | yes | Path to agent `.md` |
-| `prompt` | no | Sets child's `$prompt` (does not skip `do:prompt()`) |
+| `prompt` | yes | Sets child's `$prompt` (does not skip `do:prompt()`) |
 
 ```json
 { "agent": "rpg-character-creator-skills.md", "prompt": "./player-characters/Kevin.md" }
