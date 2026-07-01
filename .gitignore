@@ -1,0 +1,9 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+publish/
+
+# Agent runtime data
+agents/.agents/logs/
+agents/.agents/sessions/
+agents/.cache

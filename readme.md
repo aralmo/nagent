@@ -18,7 +18,7 @@ Templates are processed top-to-bottom. Messages accumulate in chat history. `do:
 
 - `agents/` — agent templates (`.md`)
 - `src/` — .NET library and CLI
-- `publish/` — published `nagent` executable
+- `publish.ps1` — build a published `nagent` executable to `publish/`
 
 ## CLI
 
