@@ -209,6 +209,7 @@ internal static class Program
     {
         var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
         var providers = new ProviderRegistry([
+            new AnthropicProvider(httpClient),
             new OpenRouterProvider(httpClient),
             new OllamaProvider(httpClient)
         ]);

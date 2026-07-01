@@ -52,12 +52,12 @@ Set LLM fallbacks. Tries each model in order on failure.
 |---|---|
 | Models | `provider@model`, separated by `\|` |
 
-Providers: `ollama` (local), `openrouter` (uses `$env:OPENROUTER_API_KEY`).
+Providers: `anthropic` (uses `$env:ANTHROPIC_API_KEY`), `ollama` (local), `openrouter` (uses `$env:OPENROUTER_API_KEY`).
 
 **Example**
 
 ```markdown
-[model:openrouter@anthropic/claude-sonnet-4|ollama@llama3]
+[model:anthropic@sonnet|openrouter@anthropic/claude-sonnet-4|ollama@llama3]
 ```
 
 ---
